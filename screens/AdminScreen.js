@@ -89,10 +89,15 @@ const AdminScreen = () => {
     formData.append('category_id', selectedCategory);
     formData.append('name', productName);
     formData.append('description', productDescription);
+
+    // Handle the image selection and append to FormData
+    const imageUri = productImage;
+    const uriParts = imageUri.split('.');
+    const fileType = uriParts[uriParts.length - 1]; // e.g., jpg, png
     formData.append('image', {
-      uri: productImage,
-      type: 'image/jpeg',
-      name: 'product_image.jpg',
+      uri: imageUri,
+      type: `image/${fileType}`,
+      name: `product_image.${fileType}`,
     });
 
     platforms.forEach((platform, index) => {
