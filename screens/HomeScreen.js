@@ -27,9 +27,9 @@ const mensCategories = [
 const womensCategories = [
   { id: '1', name: "Women's", imageUrl: require('../assets/henley-t-shirt(Small).jpeg') },
   { id: '2', name: 'Round Neck', imageUrl: require('../assets/round-neck-shirt.jpeg') },
-  { id: '3', name: 'Sleeveless', imageUrl: require('../assets/sleevelesw.jpeg') },
+  { id: '3', name: 'vneck', imageUrl: require('../assets/sleevelesw.jpeg') },
   { id: '4', name: 'Crop Top', imageUrl: require('../assets/halfsleeve.jpeg') },
-  { id: '5', name: 'Oversized', imageUrl: require('../assets/oversizew.jpeg') },
+  { id: '5', name: 'halfsleeves', imageUrl: require('../assets/halfsleeve(2).jpeg') },
 ];
 
 const products = [

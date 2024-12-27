@@ -112,7 +112,10 @@ const WomensScreen = () => {
   );
 
   const renderProduct = ({ item }) => (
-    <View style={styles.productCard}>
+    <TouchableOpacity
+      style={styles.productCard}
+      onPress={() => navigation.navigate('DetailsScreen', { productId: item.id })} // Navigate with productId
+    >
       <Image source={{ uri: item.image }} style={styles.productImage} />
       <Text style={styles.productName}>{item.name}</Text>
       <Text style={styles.productDescription}>{item.description}</Text>
@@ -125,7 +128,7 @@ const WomensScreen = () => {
           </TouchableOpacity>
         ))}
       </View>
-    </View>
+    </TouchableOpacity>
   );
 
   const renderHeader = () => (

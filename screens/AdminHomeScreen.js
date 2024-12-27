@@ -37,10 +37,10 @@ const AdminHomeScreen = () => {
 
         <TouchableOpacity
           style={styles.menuItem}
-          onPress={() => navigation.navigate('AdminProductsScreen')}
+          onPress={() => navigation.navigate('AdminLoginScreen')}
         >
           <Icon name="shirt-outline" size={width * 0.15} color="#0056b3" />
-          <Text style={styles.menuText}>Manage Products</Text>
+          <Text style={styles.menuText}>logout</Text>
         </TouchableOpacity>
       
       </View>

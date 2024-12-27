@@ -6,6 +6,7 @@ import {
   Image,
   TouchableOpacity,
   FlatList,
+  TextInput,
   Dimensions,
   BackHandler,
 } from 'react-native';
@@ -17,7 +18,9 @@ const { width, height } = Dimensions.get('window');
 const MensScreen = () => {
   const [categories, setCategories] = useState([]);
   const [products, setProducts] = useState([]);
+  const [filteredProducts, setFilteredProducts] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState(null);
+  const [searchQuery, setSearchQuery] = useState('');
 
   const navigation = useNavigation();
 
@@ -36,11 +39,13 @@ const MensScreen = () => {
     return () => backHandler.remove();
   }, [navigation]);
 
+  // Fetch categories
   useEffect(() => {
-    // Fetch categories on component mount
     const fetchCategories = async () => {
       try {
-        const response = await fetch('http://192.168.34.149/teefinder/getCategoriesmens.php');
+        const response = await fetch(
+          'http://192.168.34.149/teefinder/getCategoriesmens.php'
+        );
         const data = await response.json();
 
         if (data.status === 'success') {
@@ -56,16 +61,23 @@ const MensScreen = () => {
     fetchCategories();
   }, []);
 
+  // Fetch products based on selected category
   const fetchProducts = async (categoryId) => {
     try {
-      const response = await fetch(`http://192.168.34.149/teefinder/getProductsByCategory.php?category_id=${categoryId}`);
+      const response = await fetch(
+        `http://192.168.34.149/teefinder/getProductsByCategory.php?category_id=${categoryId}`
+      );
       const data = await response.json();
+
+      console.log('Products API Response:', data);
 
       if (data.status === 'success') {
         setProducts(data.data);
+        setFilteredProducts(data.data);
       } else {
         setProducts([]);
-        console.log('No products found');
+        setFilteredProducts([]);
+        console.log('No products found for category:', categoryId);
       }
     } catch (error) {
       console.error('Error fetching products:', error);
@@ -77,10 +89,23 @@ const MensScreen = () => {
     fetchProducts(categoryId);
   };
 
+  const handleSearch = (query) => {
+    setSearchQuery(query);
+    if (query.trim() === '') {
+      setFilteredProducts(products);
+    } else {
+      const filtered = products.filter((product) =>
+        product.name.toLowerCase().includes(query.toLowerCase())
+      );
+      setFilteredProducts(filtered);
+    }
+  };
+
   const renderCategory = ({ item }) => (
     <TouchableOpacity
       style={styles.categoryItem}
-      onPress={() => handleCategoryPress(item.id)}>
+      onPress={() => handleCategoryPress(item.id)}
+    >
       <Image source={{ uri: item.image_url }} style={styles.categoryIcon} />
       <Text style={styles.categoryText}>{item.name}</Text>
     </TouchableOpacity>
@@ -103,22 +128,36 @@ const MensScreen = () => {
     </View>
   );
 
-  const ListHeader = () => (
+  const renderHeader = () => (
     <>
-      {/* Header with Back Button */}
+      {/* Header Section */}
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
+        <TouchableOpacity
+          onPress={() => navigation.goBack()}
+          style={styles.backButton}
+        >
           <Icon name="arrow-back" size={24} color="#333" />
         </TouchableOpacity>
         <Text style={styles.logoText}>TEEFINDER</Text>
+        <TouchableOpacity onPress={() => navigation.navigate('MenuScreen')}>
+          <Icon name="menu" size={24} color="#333" />
+        </TouchableOpacity>
       </View>
 
+      <TextInput
+        style={styles.searchInput}
+        placeholder="Search products..."
+        value={searchQuery}
+        onChangeText={handleSearch}
+      />
+
       {/* Categories Section */}
-      <Text style={styles.sectionTitle}>Categories</Text>
       <FlatList
         data={categories}
         horizontal
-        keyExtractor={(item) => item.id.toString()}
+        keyExtractor={(item, index) =>
+          item.id ? item.id.toString() : index.toString()
+        }
         renderItem={renderCategory}
         contentContainerStyle={styles.categoryContainer}
         showsHorizontalScrollIndicator={false}
@@ -126,19 +165,22 @@ const MensScreen = () => {
     </>
   );
 
-  const ListFooter = () =>
-    selectedCategory && products.length === 0 ? (
-      <Text style={styles.noProductsText}>No items available for this category.</Text>
-    ) : null;
-
   return (
     <FlatList
-      data={selectedCategory ? products : []} // Show products if a category is selected
-      keyExtractor={(item) => item.id.toString()}
-      renderItem={selectedCategory ? renderProduct : null}
-      ListHeaderComponent={ListHeader} // Add header for categories and logo
-      ListFooterComponent={ListFooter} // Show no items text if applicable
+      data={filteredProducts}
+      keyExtractor={(item, index) =>
+        item.id ? item.id.toString() : index.toString()
+      }
+      renderItem={renderProduct}
+      ListHeaderComponent={renderHeader}
       contentContainerStyle={styles.container}
+      ListEmptyComponent={
+        selectedCategory && (
+          <Text style={styles.noProductsText}>
+            No items available for this category.
+          </Text>
+        )
+      }
     />
   );
 };
@@ -146,15 +188,15 @@ const MensScreen = () => {
 const styles = StyleSheet.create({
   container: {
     padding: 10,
-    backgroundColor: '#f7f7f7',
+    backgroundColor: '#ffeb99', // Matches the template
   },
   header: {
     flexDirection: 'row',
+    justifyContent: 'space-between',
     alignItems: 'center',
     marginBottom: 15,
   },
   backButton: {
-    marginRight: 10,
     padding: 5,
   },
   logoText: {
@@ -162,10 +204,13 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#333',
   },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    marginVertical: 10,
+  searchInput: {
+    borderWidth: 1,
+    borderColor: '#ccc',
+    borderRadius: 10,
+    padding: 10,
+    marginBottom: 20,
+    backgroundColor: '#fff', // Matches the template
   },
   categoryContainer: {
     flexDirection: 'row',
