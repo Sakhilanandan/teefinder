@@ -7,6 +7,8 @@ import {
   TouchableOpacity,
   ScrollView,
   ActivityIndicator,
+  BackHandler,
+  Alert,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { useNavigation } from '@react-navigation/native';
@@ -35,6 +37,29 @@ const DetailsScreen = ({ route }) => {
     fetchProductDetails();
   }, [productId]);
 
+  // Handle back button press
+  useEffect(() => {
+    const handleBackPress = () => {
+      if (navigation.canGoBack()) {
+        navigation.goBack(); // Navigate to the previous screen
+      } else {
+        Alert.alert(
+          'Exit App',
+          'Do you want to exit?',
+          [
+            { text: 'Cancel', style: 'cancel' },
+            { text: 'OK', onPress: () => BackHandler.exitApp() },
+          ],
+          { cancelable: false }
+        );
+      }
+      return true; // Prevent default back behavior
+    };
+
+    BackHandler.addEventListener('hardwareBackPress', handleBackPress);
+    return () => BackHandler.removeEventListener('hardwareBackPress', handleBackPress);
+  }, [navigation]);
+
   // Loading state
   if (loading) {
     return (
@@ -59,45 +84,30 @@ const DetailsScreen = ({ route }) => {
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.iconContainer}>
           <Icon name="arrow-back-outline" size={28} color="#000" />
         </TouchableOpacity>
-        <Text style={styles.searchBar}>Search</Text>
-        <View style={styles.iconContainer}>
-          <TouchableOpacity style={styles.iconButton}>
-            <Icon name="share-social-outline" size={28} color="#000" />
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.iconButton}>
-            <Icon name="heart-outline" size={28} color="#000" />
-          </TouchableOpacity>
-        </View>
+        <Text style={styles.title}>Details</Text>
       </View>
 
-      <ScrollView contentContainerStyle={styles.scrollContent}>
-        {/* Product Image */}
-        <Image source={{ uri: product.image }} style={styles.productImage} />
-
-        {/* Product Details */}
-        <Text style={styles.productTitle}>{product.name}</Text>
-
-        {/* Price Comparison */}
-        <View style={styles.priceContainer}>
-          {product.rates.map((rate, index) => (
-            <View key={index} style={styles.priceRow}>
-              <Text style={styles.storeName}>{rate.store}</Text>
-              <Text style={styles.price}>{rate.price}</Text>
-            </View>
-          ))}
-        </View>
-
-        {/* Other details (Size, Quantity, etc.) */}
-        {/* ... rest of the code */}
+      {/* Product Details */}
+      <ScrollView contentContainerStyle={styles.content}>
+        <Image source={{ uri: product.image }} style={styles.image} />
+        <Text style={styles.name}>{product.name}</Text>
+        <Text style={styles.description}>{product.description}</Text>
       </ScrollView>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#ffcc33' },
-  header: { /* Header styles */ },
-  // other styles...
+  container: { flex: 1, backgroundColor: '#fff' },
+  header: { flexDirection: 'row', alignItems: 'center', padding: 10, backgroundColor: '#f5f5f5' },
+  iconContainer: { padding: 5 },
+  title: { flex: 1, textAlign: 'center', fontSize: 20, fontWeight: 'bold' },
+  content: { padding: 16 },
+  image: { width: '100%', height: 300, marginBottom: 16 },
+  name: { fontSize: 24, fontWeight: 'bold', marginBottom: 10 },
+  description: { fontSize: 16, color: '#555' },
+  loadingContainer: { flex: 1, justifyContent: 'center', alignItems: 'center' },
+  errorContainer: { flex: 1, justifyContent: 'center', alignItems: 'center' },
 });
 
 export default DetailsScreen;

@@ -1,177 +1,201 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   View,
   Text,
   StyleSheet,
   Image,
   TouchableOpacity,
+  ScrollView,
   FlatList,
-  ActivityIndicator,
+  Dimensions,
 } from 'react-native';
 
-const MensScreen = () => {
+const { width, height } = Dimensions.get('window');
+
+const WomensScreen = () => {
   const [categories, setCategories] = useState([]);
   const [products, setProducts] = useState([]);
-  const [loading, setLoading] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState(null);
 
   useEffect(() => {
+    // Fetch categories on component mount
+    const fetchCategories = async () => {
+      try {
+        const response = await fetch('http://192.168.34.149/teefinder/getCategoriesmens.php');
+        const data = await response.json();
+
+        if (data.status === 'success') {
+          setCategories(data.data);
+        } else {
+          console.log('No categories found');
+        }
+      } catch (error) {
+        console.error('Error fetching categories:', error);
+      }
+    };
+
     fetchCategories();
   }, []);
 
-  const fetchCategories = async () => {
-    setLoading(true);
-    try {
-      const response = await fetch('http://192.168.34.149/teefinder/getCategories.php');
-      const json = await response.json();
-      if (json.status === 'success') {
-        setCategories(json.data);
-      } else {
-        console.error(json.message);
-      }
-    } catch (error) {
-      console.error('Error fetching categories:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
   const fetchProducts = async (categoryId) => {
-    setLoading(true);
     try {
       const response = await fetch(`http://192.168.34.149/teefinder/getProductsByCategory.php?category_id=${categoryId}`);
-      const json = await response.json();
-      if (json.status === 'success') {
-        setProducts(json.data);
-        setSelectedCategory(categoryId);
+      const data = await response.json();
+
+      if (data.status === 'success') {
+        setProducts(data.data);
       } else {
-        console.error(json.message);
+        setProducts([]);
+        console.log('No products found');
       }
     } catch (error) {
       console.error('Error fetching products:', error);
-    } finally {
-      setLoading(false);
     }
   };
 
+  const handleCategoryPress = (categoryId) => {
+    setSelectedCategory(categoryId);
+    fetchProducts(categoryId);
+  };
+
   const renderCategory = ({ item }) => (
-    <TouchableOpacity style={styles.categoryItem} onPress={() => fetchProducts(item.id)}>
-      <Image source={{ uri: item.image }} style={styles.categoryImage} />
-      <Text style={styles.categoryName}>{item.name}</Text>
+    <TouchableOpacity
+      style={styles.categoryItem}
+      onPress={() => handleCategoryPress(item.id)}>
+      <Image source={{ uri: item.image_url }} style={styles.categoryIcon} />
+      <Text style={styles.categoryText}>{item.name}</Text>
     </TouchableOpacity>
   );
 
   const renderProduct = ({ item }) => (
-    <View style={styles.productItem}>
+    <View style={styles.productCard}>
       <Image source={{ uri: item.image }} style={styles.productImage} />
       <Text style={styles.productName}>{item.name}</Text>
       <Text style={styles.productDescription}>{item.description}</Text>
-      {item.platforms.map((platform, index) => (
-        <View key={index} style={styles.platformInfo}>
-          <Text style={styles.platformName}>{platform.platformname}</Text>
-          <Text style={styles.platformRate}>${platform.platformrate}</Text>
-          <TouchableOpacity onPress={() => Linking.openURL(platform.link)}>
-            <Text style={styles.platformLink}>Buy Now</Text>
+      <View>
+        {item.platforms.map((platform, index) => (
+          <TouchableOpacity key={index}>
+            <Text style={styles.platformName}>
+              {platform.platformname} - ${platform.platformrate}
+            </Text>
           </TouchableOpacity>
-        </View>
-      ))}
+        ))}
+      </View>
     </View>
   );
 
-  if (loading) {
-    return (
-      <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#0000ff" />
-      </View>
-    );
-  }
-
   return (
-    <View style={styles.container}>
-      {selectedCategory === null ? (
-        <FlatList
-          data={categories}
-          renderItem={renderCategory}
-          keyExtractor={(item) => item.id.toString()}
-          contentContainerStyle={styles.listContainer}
-        />
-      ) : (
-        <FlatList
-          data={products}
-          renderItem={renderProduct}
-          keyExtractor={(item) => item.id.toString()}
-          contentContainerStyle={styles.listContainer}
-        />
+    <ScrollView contentContainerStyle={styles.container}>
+      {/* Search and Menu */}
+      <View style={styles.header}>
+        <Text style={styles.logoText}>TEEFINDER</Text>
+      </View>
+
+      {/* Categories Section */}
+      <Text style={styles.sectionTitle}>Categories</Text>
+      <FlatList
+        data={categories}
+        horizontal
+        keyExtractor={(item) => item.id.toString()}
+        renderItem={renderCategory}
+        contentContainerStyle={styles.categoryContainer}
+        showsHorizontalScrollIndicator={false}
+      />
+
+      {/* Products Section */}
+      {selectedCategory && (
+        <>
+          <Text style={styles.sectionTitle}>Items</Text>
+          {products.length > 0 ? (
+            <FlatList
+              data={products}
+              keyExtractor={(item) => item.id.toString()}
+              renderItem={renderProduct}
+              contentContainerStyle={styles.listContent}
+            />
+          ) : (
+            <Text style={styles.noProductsText}>No items available for this category.</Text>
+          )}
+        </>
       )}
-    </View>
+    </ScrollView>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
+    padding: 10,
     backgroundColor: '#f7f7f7',
   },
-  listContainer: {
-    padding: 10,
+  header: {
+    alignItems: 'center',
+    marginBottom: 15,
+  },
+  logoText: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#333',
+  },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginVertical: 10,
+  },
+  categoryContainer: {
+    flexDirection: 'row',
+    marginBottom: 20,
   },
   categoryItem: {
-    flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 10,
+    marginHorizontal: 10,
   },
-  categoryImage: {
-    width: 50,
-    height: 50,
-    borderRadius: 25,
-    marginRight: 10,
+  categoryIcon: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    marginBottom: 5,
   },
-  categoryName: {
-    fontSize: 16,
-    fontWeight: 'bold',
+  categoryText: {
+    fontSize: 14,
+    textAlign: 'center',
   },
-  productItem: {
+  listContent: {
+    paddingBottom: 20,
+  },
+  productCard: {
     backgroundColor: '#fff',
-    marginBottom: 10,
-    padding: 10,
-    borderRadius: 5,
+    marginBottom: 15,
+    borderRadius: 10,
+    padding: 15,
+    shadowColor: '#000',
+    shadowOpacity: 0.1,
+    shadowRadius: 5,
+    elevation: 5,
   },
   productImage: {
     width: '100%',
-    height: 150,
-    borderRadius: 5,
+    height: height * 0.2,
+    borderRadius: 10,
   },
   productName: {
-    fontSize: 16,
+    fontSize: 18,
     fontWeight: 'bold',
-    marginTop: 10,
+    marginVertical: 5,
   },
   productDescription: {
     fontSize: 14,
-    color: '#555',
-    marginVertical: 5,
-  },
-  platformInfo: {
-    marginTop: 10,
+    color: '#666',
   },
   platformName: {
     fontSize: 14,
-    fontWeight: 'bold',
-  },
-  platformRate: {
-    fontSize: 14,
-    color: '#333',
-  },
-  platformLink: {
-    fontSize: 14,
     color: '#0056b3',
-    textDecorationLine: 'underline',
+    marginTop: 5,
   },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+  noProductsText: {
+    textAlign: 'center',
+    color: '#999',
+    marginTop: 20,
   },
 });
 
-export default MensScreen;
+export default WomensScreen;
