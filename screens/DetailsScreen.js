@@ -24,7 +24,7 @@ const DetailsScreen = ({ route }) => {
   useEffect(() => {
     const fetchProductDetails = async () => {
       try {
-        const response = await fetch(`https://your-api-url/products/${productId}`);
+        const response = await fetch(`https://192.168.34.149/teefinder/products/${productId}`);
         const data = await response.json();
         setProduct(data);
         setLoading(false);

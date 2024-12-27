@@ -51,6 +51,7 @@ const ProfileScreen = () => {
         const result = await response.json();
 
         if (result.success) {
+          console(result.data.username)
           setUserName(result.data.username);
           setEmail(result.data.email);
         } else {

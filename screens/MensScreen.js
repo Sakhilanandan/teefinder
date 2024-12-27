@@ -5,17 +5,36 @@ import {
   StyleSheet,
   Image,
   TouchableOpacity,
-  ScrollView,
   FlatList,
   Dimensions,
+  BackHandler,
 } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
+import Icon from 'react-native-vector-icons/Ionicons';
 
 const { width, height } = Dimensions.get('window');
 
-const WomensScreen = () => {
+const MensScreen = () => {
   const [categories, setCategories] = useState([]);
   const [products, setProducts] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState(null);
+
+  const navigation = useNavigation();
+
+  // Handle hardware back button
+  useEffect(() => {
+    const backAction = () => {
+      navigation.goBack();
+      return true;
+    };
+
+    const backHandler = BackHandler.addEventListener(
+      'hardwareBackPress',
+      backAction
+    );
+
+    return () => backHandler.remove();
+  }, [navigation]);
 
   useEffect(() => {
     // Fetch categories on component mount
@@ -84,10 +103,13 @@ const WomensScreen = () => {
     </View>
   );
 
-  return (
-    <ScrollView contentContainerStyle={styles.container}>
-      {/* Search and Menu */}
+  const ListHeader = () => (
+    <>
+      {/* Header with Back Button */}
       <View style={styles.header}>
+        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
+          <Icon name="arrow-back" size={24} color="#333" />
+        </TouchableOpacity>
         <Text style={styles.logoText}>TEEFINDER</Text>
       </View>
 
@@ -101,24 +123,23 @@ const WomensScreen = () => {
         contentContainerStyle={styles.categoryContainer}
         showsHorizontalScrollIndicator={false}
       />
+    </>
+  );
 
-      {/* Products Section */}
-      {selectedCategory && (
-        <>
-          <Text style={styles.sectionTitle}>Items</Text>
-          {products.length > 0 ? (
-            <FlatList
-              data={products}
-              keyExtractor={(item) => item.id.toString()}
-              renderItem={renderProduct}
-              contentContainerStyle={styles.listContent}
-            />
-          ) : (
-            <Text style={styles.noProductsText}>No items available for this category.</Text>
-          )}
-        </>
-      )}
-    </ScrollView>
+  const ListFooter = () =>
+    selectedCategory && products.length === 0 ? (
+      <Text style={styles.noProductsText}>No items available for this category.</Text>
+    ) : null;
+
+  return (
+    <FlatList
+      data={selectedCategory ? products : []} // Show products if a category is selected
+      keyExtractor={(item) => item.id.toString()}
+      renderItem={selectedCategory ? renderProduct : null}
+      ListHeaderComponent={ListHeader} // Add header for categories and logo
+      ListFooterComponent={ListFooter} // Show no items text if applicable
+      contentContainerStyle={styles.container}
+    />
   );
 };
 
@@ -128,8 +149,13 @@ const styles = StyleSheet.create({
     backgroundColor: '#f7f7f7',
   },
   header: {
+    flexDirection: 'row',
     alignItems: 'center',
     marginBottom: 15,
+  },
+  backButton: {
+    marginRight: 10,
+    padding: 5,
   },
   logoText: {
     fontSize: 24,
@@ -158,9 +184,6 @@ const styles = StyleSheet.create({
   categoryText: {
     fontSize: 14,
     textAlign: 'center',
-  },
-  listContent: {
-    paddingBottom: 20,
   },
   productCard: {
     backgroundColor: '#fff',
@@ -198,4 +221,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default WomensScreen;
+export default MensScreen;
