@@ -46,8 +46,13 @@ const MensScreen = () => {
         const response = await fetch(
           'http://192.168.34.149/teefinder/getCategoriesmens.php'
         );
-        const data = await response.json();
-
+    
+        // Log the raw response
+        const textResponse = await response.text();
+        console.log('Raw Response:', textResponse);
+    
+        const data = JSON.parse(textResponse);
+    
         if (data.status === 'success') {
           setCategories(data.data);
         } else {
@@ -56,21 +61,25 @@ const MensScreen = () => {
       } catch (error) {
         console.error('Error fetching categories:', error);
       }
+    
+    
     };
 
     fetchCategories();
   }, []);
 
-  // Fetch products based on selected category
   const fetchProducts = async (categoryId) => {
     try {
       const response = await fetch(
         `http://192.168.34.149/teefinder/getProductsByCategory.php?category_id=${categoryId}`
       );
-      const data = await response.json();
-
-      console.log('Products API Response:', data);
-
+  
+      // Log raw response to debug
+      const textResponse = await response.text();
+      console.log('Raw Response:', textResponse);
+  
+      const data = JSON.parse(textResponse);
+  
       if (data.status === 'success') {
         setProducts(data.data);
         setFilteredProducts(data.data);
@@ -83,6 +92,7 @@ const MensScreen = () => {
       console.error('Error fetching products:', error);
     }
   };
+  
 
   const handleCategoryPress = (categoryId) => {
     setSelectedCategory(categoryId);
@@ -112,7 +122,10 @@ const MensScreen = () => {
   );
 
   const renderProduct = ({ item }) => (
-    <View style={styles.productCard}>
+    <TouchableOpacity
+      style={styles.productCard}
+      onPress={() => navigation.navigate('DetailsScreen', { productId: item.id })} // Navigate with productId
+    >
       <Image source={{ uri: item.image }} style={styles.productImage} />
       <Text style={styles.productName}>{item.name}</Text>
       <Text style={styles.productDescription}>{item.description}</Text>
@@ -125,7 +138,7 @@ const MensScreen = () => {
           </TouchableOpacity>
         ))}
       </View>
-    </View>
+    </TouchableOpacity>
   );
 
   const renderHeader = () => (
