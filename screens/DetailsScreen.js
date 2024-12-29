@@ -12,6 +12,7 @@ import {
 } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { useNavigation } from '@react-navigation/native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const DetailsScreen = ({ route }) => {
   const navigation = useNavigation();
@@ -29,51 +30,58 @@ const DetailsScreen = ({ route }) => {
           `http://192.168.34.149/teefinder/getProductDetails.php?product_id=${productId}`
         );
         const data = await response.json();
-
+  
         if (data.status === 'success') {
           setProduct(data.product);
           setIsFavorite(data.product.is_favorite); // Initialize favorite status
         } else {
           setProduct(null);
         }
-
-        setLoading(false);
       } catch (error) {
-        console.error(error);
+        console.error('Error fetching product details:', error); // Log error details
+        Alert.alert('Error', 'Unable to fetch product details. Please try again.');
+      } finally {
         setLoading(false);
       }
     };
-
+  
+    
     fetchProductDetails();
   }, [productId]);
 
   // Function to toggle favorite status
   const toggleFavorite = async () => {
-    try {
-      const response = await fetch(
-        `http://192.168.34.149/teefinder/updateFavorite.php`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            product_id: productId,
-            is_favorite: !isFavorite,
-          }),
-        }
-      );
-      const data = await response.json();
-      if (data.status === 'success') {
-        setIsFavorite(!isFavorite); // Update favorite state
-      } else {
-        Alert.alert('Error', 'Failed to update favorite status.');
-      }
-    } catch (error) {
-      console.error(error);
-      Alert.alert('Error', 'An error occurred while updating the favorite status.');
+  try {
+    const userId = await AsyncStorage.getItem('user_id'); // Fetch user_id from storage
+    if (!userId) {
+      Alert.alert('Error', 'User not logged in.');
+      return;
     }
-  };
+
+    const response = await fetch('http://192.168.34.149/teefinder/updateFavorite.php', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        user_id: parseInt(userId), // Pass user_id
+        product_id: productId,    // Pass product_id
+        is_favorite: !isFavorite, // Toggle is_favorite
+      }),
+    });
+
+    const data = await response.json();
+    if (data.status === 'success') {
+      setIsFavorite(!isFavorite); // Update favorite state
+    } else {
+      Alert.alert('Error', 'Failed to update favorite status.');
+    }
+  } catch (error) {
+    console.error(error);
+    Alert.alert('Error', 'An error occurred while updating the favorite status.');
+  }
+};
+
 
   // Loading state
   if (loading) {

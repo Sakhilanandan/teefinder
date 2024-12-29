@@ -3,32 +3,36 @@ import {
   View,
   Text,
   StyleSheet,
-  Image,
   TextInput,
   TouchableOpacity,
   Dimensions,
+  Alert,
 } from "react-native";
 
 // Get screen dimensions
 const { width, height } = Dimensions.get("window");
 
 const MyProfileScreen = ({ route, navigation }) => {
-  const { email } = route.params; // Passed email from ProfileScreen
+  // Extract email from route params, with a fallback
+  const { email } = route.params || { email: "example@example.com" };
 
-  // State for input fields
-  const [fullName, setFullName] = useState("John Doe"); // Example full name
+  // State for profile details
+  const [fullName, setFullName] = useState("John Doe");
   const [userEmail, setUserEmail] = useState(email);
-  const [phoneNumber, setPhoneNumber] = useState("123-456-7890"); // Example phone number
+  const [password, setPassword] = useState("123");
 
   const handleSave = () => {
-    console.log("Saved Data:", { fullName, userEmail, phoneNumber });
-    alert("Profile Updated!");
-    navigation.goBack(); // Navigate back to ProfileScreen after saving
+    Alert.alert("Profile Updated", "Your changes have been saved!");
+    navigation.goBack();
   };
 
   const handleLogout = () => {
-    console.log("User logged out");
-    navigation.replace("LoginScreen"); // Navigate to the LoginScreen
+    Alert.alert("Logged Out", "You have been logged out.", [
+      {
+        text: "OK",
+        onPress: () => navigation.replace("LoginScreen"),
+      },
+    ]);
   };
 
   return (
@@ -37,14 +41,10 @@ const MyProfileScreen = ({ route, navigation }) => {
       <View style={styles.profileHeader}>
         <TouchableOpacity
           style={styles.closeButton}
-          onPress={() => navigation.goBack()} // Go back to ProfileScreen
+          onPress={() => navigation.goBack()}
         >
           <Text style={styles.closeText}>X</Text>
         </TouchableOpacity>
-        <Image
-          source={{ uri: "https://via.placeholder.com/100" }} // Replace with actual image
-          style={styles.profileImage}
-        />
         <Text style={styles.profileName}>{fullName}</Text>
         <Text style={styles.profileEmail}>{userEmail}</Text>
       </View>
@@ -65,12 +65,12 @@ const MyProfileScreen = ({ route, navigation }) => {
           onChangeText={(text) => setUserEmail(text)}
         />
 
-        <Text style={styles.label}>Phone Number</Text>
+        <Text style={styles.label}>Password</Text>
         <TextInput
           style={styles.input}
-          value={phoneNumber}
-          onChangeText={(text) => setPhoneNumber(text)}
-          keyboardType="phone-pad"
+          value={password}
+          onChangeText={(text) => setPassword(text)}
+          secureTextEntry
         />
 
         {/* Save Button */}
@@ -87,16 +87,17 @@ const MyProfileScreen = ({ route, navigation }) => {
   );
 };
 
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#FFD700",
-    paddingHorizontal: width * 0.05, // 5% of screen width
-    paddingTop: height * 0.05, // 5% of screen height
+    paddingHorizontal: width * 0.05,
+    paddingTop: height * 0.05,
   },
   profileHeader: {
     alignItems: "center",
-    marginBottom: height * 0.03, // 3% of screen height
+    marginBottom: height * 0.03,
   },
   closeButton: {
     position: "absolute",
@@ -109,13 +110,13 @@ const styles = StyleSheet.create({
     color: "#000",
   },
   profileImage: {
-    width: width * 0.25, // 25% of screen width
-    height: width * 0.25, // Keep it square
+    width: width * 0.25,
+    height: width * 0.25,
     borderRadius: (width * 0.25) / 2,
     marginBottom: 10,
   },
   profileName: {
-    fontSize: height * 0.025, // Relative font size
+    fontSize: height * 0.025,
     fontWeight: "bold",
     color: "#000",
   },
@@ -135,14 +136,14 @@ const styles = StyleSheet.create({
     backgroundColor: "#FFF",
     borderRadius: 10,
     padding: 10,
-    marginBottom: height * 0.02, // Dynamic spacing
+    marginBottom: height * 0.02,
     fontSize: height * 0.02,
     color: "#000",
   },
   saveButton: {
     backgroundColor: "#4CAF50",
     borderRadius: 10,
-    padding: height * 0.02, // Dynamic padding
+    padding: height * 0.02,
     alignItems: "center",
     marginBottom: height * 0.015,
   },

@@ -42,7 +42,7 @@ const MenuScreen = () => {
    <ScrollView contentContainerStyle={styles.menuOptions}>
     {/* Personal Section */}
     <Text style={styles.sectionHeader}>Personal</Text>
-    <TouchableOpacity style={styles.menuItem} onPress={() => handleNavigation('ProfileScreen')}>
+    <TouchableOpacity style={styles.menuItem} onPress={() => handleNavigation('MyProfile')}>
      <Text style={styles.menuTextItem}>Profile</Text>
     </TouchableOpacity>
 
@@ -77,10 +77,7 @@ const MenuScreen = () => {
      <Text style={styles.menuTextItem}>Check for Update</Text>
     </TouchableOpacity>
 
-    {/* Delete Account */}
-    <TouchableOpacity style={styles.menuItem}>
-     <Text style={[styles.menuTextItem, styles.deleteText]}>Delete My Account</Text>
-    </TouchableOpacity>
+   
    </ScrollView>
   </View>
  );
