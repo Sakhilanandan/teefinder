@@ -24,6 +24,7 @@ import AdminScreen from "./screens/AdminScreen";
 import AdminHomeScreen from "./screens/AdminHomeScreen";
 import AdminCategoriesScreen from "./screens/AdminCategoriesScreen";
 import AboutUsScreen from "./screens/AboutUsScreen";
+import TermsConditionsScreen from "./screens/TermsConditionsScreen";
 const Stack = createStackNavigator();
 
 export default function App() {
@@ -136,10 +137,16 @@ export default function App() {
           options={{ headerShown: false }}
 
         />
-        
-        <Stack.Screen
+         <Stack.Screen
           name="AboutUsScreen"
           component={AboutUsScreen}
+          options={{ headerShown: false }}
+
+        />
+        
+        <Stack.Screen
+          name="TermsConditionsScreen"
+          component={TermsConditionsScreen}
           options={{ headerShown: false }}
 
         />

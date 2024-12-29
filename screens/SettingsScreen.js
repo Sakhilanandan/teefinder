@@ -43,19 +43,13 @@ const SettingsScreen = () => {
 
           <TouchableOpacity
             style={styles.menuItem}
-            onPress={() => handleNavigation("TermsAndConditions")}
+            onPress={() => handleNavigation("TermsConditionsScreen")}
           >
             <Text style={styles.menuText}>Terms and Conditions</Text>
             <Icon name="chevron-forward-outline" size={20} color="#333" />
           </TouchableOpacity>
 
-          <TouchableOpacity
-            style={styles.menuItem}
-            onPress={() => handleNavigation("PrivacyPolicy")}
-          >
-            <Text style={styles.menuText}>Privacy Policy</Text>
-            <Icon name="chevron-forward-outline" size={20} color="#333" />
-          </TouchableOpacity>
+         
 
           <TouchableOpacity
             style={styles.menuItem}

@@ -52,14 +52,14 @@ const MenuScreen = () => {
      <Text style={styles.menuTextItem}>All Categories</Text>
     </TouchableOpacity>
 
-    {/* Account Section */}
-    <Text style={styles.sectionHeader}>Account</Text>
-    <TouchableOpacity style={styles.menuItem} onPress={() => handleNavigation('AboutUsScreen')}>
-     <Text style={styles.menuTextItem}>About Us</Text>
-    </TouchableOpacity>
+   
+    
 
     {/* New Additional Options Section */}
     <Text style={styles.sectionHeader}>More Options</Text>
+    <TouchableOpacity style={styles.menuItem} onPress={() => handleNavigation('AboutUsScreen')}>
+     <Text style={styles.menuTextItem}>About Us</Text>
+    </TouchableOpacity>
     <TouchableOpacity style={styles.menuItem} onPress={() => handleNavigation('SettingsScreen')}>
      <Icon name="settings" size={20} color="#000" style={styles.icon} />
      <Text style={styles.menuTextItem}>Settings</Text>
@@ -76,9 +76,9 @@ const MenuScreen = () => {
      <Icon name="system-update" size={20} color="#000" style={styles.icon} />
      <Text style={styles.menuTextItem}>Check for Update</Text>
     </TouchableOpacity>
-
-   
+    
    </ScrollView>
+   
   </View>
  );
 };

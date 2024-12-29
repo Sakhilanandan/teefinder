@@ -8,36 +8,23 @@ import {
   FlatList,
   TextInput,
   Dimensions,
-  BackHandler,
+  KeyboardAvoidingView,
+  Platform,
+  Keyboard,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/Ionicons';
 
-const { width, height } = Dimensions.get('window');
+const { height } = Dimensions.get('window');
 
 const MensScreen = () => {
   const [categories, setCategories] = useState([]);
   const [products, setProducts] = useState([]);
+  const [filteredCategories, setFilteredCategories] = useState([]);
   const [filteredProducts, setFilteredProducts] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
-
   const navigation = useNavigation();
-
-  // Handle hardware back button
-  useEffect(() => {
-    const backAction = () => {
-      navigation.goBack();
-      return true;
-    };
-
-    const backHandler = BackHandler.addEventListener(
-      'hardwareBackPress',
-      backAction
-    );
-
-    return () => backHandler.remove();
-  }, [navigation]);
 
   // Fetch categories
   useEffect(() => {
@@ -46,40 +33,25 @@ const MensScreen = () => {
         const response = await fetch(
           'http://192.168.34.149/teefinder/getCategoriesmens.php'
         );
-    
-        // Log the raw response
-        const textResponse = await response.text();
-        console.log('Raw Response:', textResponse);
-    
-        const data = JSON.parse(textResponse);
-    
+        const data = await response.json();
         if (data.status === 'success') {
           setCategories(data.data);
-        } else {
-          console.log('No categories found');
-        }
+          setFilteredCategories(data.data);
+        } else console.log('No categories found');
       } catch (error) {
         console.error('Error fetching categories:', error);
       }
-    
-    
     };
-
     fetchCategories();
   }, []);
 
+  // Fetch products by category
   const fetchProducts = async (categoryId) => {
     try {
       const response = await fetch(
         `http://192.168.34.149/teefinder/getProductsByCategory.php?category_id=${categoryId}`
       );
-  
-      // Log raw response to debug
-      const textResponse = await response.text();
-      console.log('Raw Response:', textResponse);
-  
-      const data = JSON.parse(textResponse);
-  
+      const data = await response.json();
       if (data.status === 'success') {
         setProducts(data.data);
         setFilteredProducts(data.data);
@@ -92,43 +64,54 @@ const MensScreen = () => {
       console.error('Error fetching products:', error);
     }
   };
-  
 
-  const handleCategoryPress = (categoryId) => {
-    setSelectedCategory(categoryId);
-    fetchProducts(categoryId);
-  };
-
+  // Handle search for both categories and products
   const handleSearch = (query) => {
     setSearchQuery(query);
-    if (query.trim() === '') {
+    if (!query.trim()) {
+      setFilteredCategories(categories);
       setFilteredProducts(products);
     } else {
-      const filtered = products.filter((product) =>
+      // Filter categories
+      const filteredCategoriesList = categories.filter((category) =>
+        category.name.toLowerCase().includes(query.toLowerCase())
+      );
+      setFilteredCategories(filteredCategoriesList);
+
+      // Filter products
+      const filteredProductsList = products.filter((product) =>
         product.name.toLowerCase().includes(query.toLowerCase())
       );
-      setFilteredProducts(filtered);
+      setFilteredProducts(filteredProductsList);
     }
   };
 
+  // Render a category
   const renderCategory = ({ item }) => (
     <TouchableOpacity
       style={styles.categoryItem}
-      onPress={() => handleCategoryPress(item.id)}
+      onPress={() => {
+        setSelectedCategory(item.id);
+        fetchProducts(item.id);
+      }}
     >
       <Image source={{ uri: item.image_url }} style={styles.categoryIcon} />
       <Text style={styles.categoryText}>{item.name}</Text>
     </TouchableOpacity>
   );
 
+  // Render a product with price information
   const renderProduct = ({ item }) => (
     <TouchableOpacity
       style={styles.productCard}
-      onPress={() => navigation.navigate('DetailsScreen', { productId: item.id })} // Navigate with productId
+      onPress={() =>
+        navigation.navigate('DetailsScreen', { productId: item.id })
+      }
     >
       <Image source={{ uri: item.image }} style={styles.productImage} />
       <Text style={styles.productName}>{item.name}</Text>
       <Text style={styles.productDescription}>{item.description}</Text>
+      {/* Displaying price details */}
       <View>
         {item.platforms.map((platform, index) => (
           <TouchableOpacity key={index}>
@@ -141,76 +124,71 @@ const MensScreen = () => {
     </TouchableOpacity>
   );
 
-  const renderHeader = () => (
-    <>
-      {/* Header Section */}
-      <View style={styles.header}>
-        <TouchableOpacity
-          onPress={() => navigation.goBack()}
-          style={styles.backButton}
-        >
-          <Icon name="arrow-back" size={24} color="#333" />
-        </TouchableOpacity>
-        <Text style={styles.logoText}>TEEFINDER</Text>
-        <TouchableOpacity onPress={() => navigation.navigate('MenuScreen')}>
-          <Icon name="menu" size={24} color="#333" />
-        </TouchableOpacity>
-      </View>
-
-      <TextInput
-        style={styles.searchInput}
-        placeholder="Search products..."
-        value={searchQuery}
-        onChangeText={handleSearch}
-      />
-
-      {/* Categories Section */}
-      <FlatList
-        data={categories}
-        horizontal
-        keyExtractor={(item, index) =>
-          item.id ? item.id.toString() : index.toString()
-        }
-        renderItem={renderCategory}
-        contentContainerStyle={styles.categoryContainer}
-        showsHorizontalScrollIndicator={false}
-      />
-    </>
-  );
-
   return (
-    <FlatList
-      data={filteredProducts}
-      keyExtractor={(item, index) =>
-        item.id ? item.id.toString() : index.toString()
-      }
-      renderItem={renderProduct}
-      ListHeaderComponent={renderHeader}
-      contentContainerStyle={styles.container}
-      ListEmptyComponent={
-        selectedCategory && (
+    <KeyboardAvoidingView
+      style={{ flex: 1 }}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+    >
+      <FlatList
+        data={filteredProducts}
+        keyExtractor={(item) => item.id.toString()}
+        renderItem={renderProduct}
+        ListHeaderComponent={
+          <View style={styles.header}>
+            <View style={styles.headerTop}>
+              <TouchableOpacity onPress={() => navigation.goBack()}>
+                <Icon name="arrow-back" size={24} color="#333" />
+              </TouchableOpacity>
+              <Text style={styles.logoText}>TEEFINDER</Text>
+              <TouchableOpacity onPress={() => navigation.navigate('MenuScreen')}>
+                <Icon name="menu" size={24} color="#333" />
+              </TouchableOpacity>
+            </View>
+            <TextInput
+              style={styles.searchInput}
+              placeholder="Search categories or products..."
+              value={searchQuery}
+              onChangeText={handleSearch}
+              returnKeyType="search"
+              onSubmitEditing={Keyboard.dismiss}
+            />
+            <FlatList
+              data={filteredCategories}
+              horizontal
+              keyExtractor={(item) => item.id.toString()}
+              renderItem={renderCategory}
+              contentContainerStyle={styles.categoryContainer}
+              showsHorizontalScrollIndicator={false}
+            />
+          </View>
+        }
+        contentContainerStyle={styles.container}
+        keyboardShouldPersistTaps="handled"
+        ListEmptyComponent={
           <Text style={styles.noProductsText}>
-            No items available for this category.
+            {searchQuery
+              ? 'No matching categories or products.'
+              : selectedCategory && 'No items available for this category.'}
           </Text>
-        )
-      }
-    />
+        }
+      />
+    </KeyboardAvoidingView>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     padding: 10,
-    backgroundColor: '#ffeb99', // Matches the template
+    backgroundColor: '#ffeb99',
   },
   header: {
+    paddingBottom: 10,
+  },
+  headerTop: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     marginBottom: 15,
-  },
-  backButton: {
-    padding: 5,
   },
   logoText: {
     fontSize: 24,
@@ -222,11 +200,10 @@ const styles = StyleSheet.create({
     borderColor: '#ccc',
     borderRadius: 10,
     padding: 10,
-    marginBottom: 20,
-    backgroundColor: '#fff', // Matches the template
+    marginBottom: 10,
+    backgroundColor: '#fff',
   },
   categoryContainer: {
-    flexDirection: 'row',
     marginBottom: 20,
   },
   categoryItem: {
@@ -237,7 +214,6 @@ const styles = StyleSheet.create({
     width: 60,
     height: 60,
     borderRadius: 30,
-    marginBottom: 5,
   },
   categoryText: {
     fontSize: 14,
@@ -245,8 +221,8 @@ const styles = StyleSheet.create({
   },
   productCard: {
     backgroundColor: '#fff',
-    marginBottom: 15,
     borderRadius: 10,
+    marginBottom: 15,
     padding: 15,
     shadowColor: '#000',
     shadowOpacity: 0.1,

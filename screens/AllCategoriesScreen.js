@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -6,49 +6,68 @@ import {
   StyleSheet,
   FlatList,
   Dimensions,
+  ActivityIndicator,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 
-const { width, height } = Dimensions.get('window'); // Added Dimensions
+const { width, height } = Dimensions.get('window');
 
 const AllCategoriesScreen = () => {
   const navigation = useNavigation();
   const [selectedTab, setSelectedTab] = useState('all');
-  const [expanded, setExpanded] = useState(true);
+  const [categories, setCategories] = useState({ mens: [], womens: [] });
+  const [loading, setLoading] = useState(true);
 
-  // Sample data for categories
-  const categories = [
-    { title: 'v-neck' },
-    { title: 'round neck' },
-    { title: 'hoodies' },
-    { title: 'half sleeves' },
-    { title: 'full sleeves' },
-    { title: 'cropped t-shirt' },
-    { title: 'polo' },
-    { title: 'round neck' },
-    { title: 'raglan sleeve' },
-    { title: 'U-neck' },
-  ];
+  // Fetch categories from the PHP endpoint
+  useEffect(() => {
+    fetch('http://192.168.34.149/teefinder/manage_categories.php') // Replace with your PHP endpoint URL
+      .then((response) => response.json())
+      .then((data) => {
+        if (data.status === 'success' && data.data) {
+          setCategories(data.data);
+        }
+        setLoading(false);
+      })
+      .catch((error) => {
+        console.error('Error fetching categories:', error);
+        setLoading(false);
+      });
+  }, []);
 
-  // Handle tab switching
-  const handleTabSwitch = (tab) => {
-    setSelectedTab(tab);
+  // Filter categories based on the selected tab
+  const getFilteredCategories = () => {
+    if (selectedTab === 'all') {
+      return [...(categories.mens || []), ...(categories.womens || [])];
+    }
+    return categories[selectedTab] || [];
   };
 
-  // Handle dropdown toggle
-  const handleDropdownToggle = () => {
-    setExpanded(!expanded);
+  // Handle category selection and navigation
+  const handleCategoryPress = (categoryName) => {
+    if (selectedTab === 'mens') {
+      navigation.navigate('MensScreen', { categoryName });  // Navigate to MensScreen
+    } else if (selectedTab === 'womens') {
+      navigation.navigate('WomensScreen', { categoryName });  // Navigate to WomensScreen
+    } 
   };
 
   const renderCategory = ({ item }) => (
-    <TouchableOpacity style={styles.categoryButton}>
-      <Text style={styles.categoryText}>{item.title}</Text>
+    <TouchableOpacity
+      style={styles.categoryButton}
+      onPress={() => handleCategoryPress(item.name.toLowerCase())}
+    >
+      <Text style={styles.categoryText}>{item.name}</Text>
     </TouchableOpacity>
+  );
+
+  const renderSectionHeader = (sectionTitle) => (
+    <View style={styles.sectionHeader}>
+      <Text style={styles.sectionHeaderText}>{sectionTitle}</Text>
+    </View>
   );
 
   return (
     <View style={styles.container}>
-      {/* Header Section */}
       <View style={styles.header}>
         <Text style={styles.headerText}>All Categories</Text>
         <TouchableOpacity onPress={() => navigation.goBack()}>
@@ -56,63 +75,45 @@ const AllCategoriesScreen = () => {
         </TouchableOpacity>
       </View>
 
-      {/* Tabs Section */}
       <View style={styles.tabsContainer}>
         <TouchableOpacity
           style={[styles.tabButton, selectedTab === 'all' && styles.activeTab]}
-          onPress={() => handleTabSwitch('all')}
+          onPress={() => setSelectedTab('all')}
         >
-          <Text style={styles.tabText}>all</Text>
+          <Text style={styles.tabText}>All</Text>
         </TouchableOpacity>
         <TouchableOpacity
-          style={[styles.tabButton, selectedTab === 'Female' && styles.activeTab]}
-          onPress={() => handleTabSwitch('Female')}
+          style={[styles.tabButton, selectedTab === 'womens' && styles.activeTab]}
+          onPress={() => setSelectedTab('womens')}
         >
-          <Text style={styles.tabText}>Female</Text>
+          <Text style={styles.tabText}>Women's</Text>
         </TouchableOpacity>
         <TouchableOpacity
-          style={[styles.tabButton, selectedTab === 'Male' && styles.activeTab]}
-          onPress={() => handleTabSwitch('Male')}
+          style={[styles.tabButton, selectedTab === 'mens' && styles.activeTab]}
+          onPress={() => setSelectedTab('mens')}
         >
-          <Text style={styles.tabText}>Male</Text>
+          <Text style={styles.tabText}>Men's</Text>
         </TouchableOpacity>
       </View>
 
-      {/* Category Dropdown and List */}
-      <FlatList
-        ListHeaderComponent={
-          expanded && (
-            <TouchableOpacity style={styles.dropdown} onPress={handleDropdownToggle}>
-              <Text style={styles.dropdownText}>Clothing</Text>
-              <Text style={styles.dropdownArrow}>{expanded ? '▲' : '▼'}</Text>
-            </TouchableOpacity>
-          )
-        }
-        data={categories}
-        numColumns={2}
-        keyExtractor={(item, index) => index.toString()}
-        contentContainerStyle={styles.categoriesContainer}
-        renderItem={renderCategory}
-      />
-
-      {/* Bottom Section */}
-      <View style={styles.bottomSection}>
-        <View style={styles.recommendation}>
-          <Text style={styles.recommendationText}>Just for You</Text>
-        </View>
-        <TouchableOpacity style={styles.arrowButton}>
-          <Text style={styles.arrowText}>➔</Text>
-        </TouchableOpacity>
-      </View>
+      {loading ? (
+        <ActivityIndicator size="large" color="#007BFF" style={styles.loader} />
+      ) : (
+        <FlatList
+          data={getFilteredCategories()}
+          numColumns={2}
+          keyExtractor={(item) => item.id.toString()}
+          contentContainerStyle={styles.categoriesContainer}
+          renderItem={renderCategory}
+          ListHeaderComponent={selectedTab !== 'all' && renderSectionHeader(selectedTab === 'mens' ? 'Men\'s Categories' : 'Women\'s Categories')}
+        />
+      )}
     </View>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#E3E7F1',
-  },
+  container: { flex: 1, backgroundColor: '#E3E7F1' },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -121,53 +122,18 @@ const styles = StyleSheet.create({
     paddingVertical: height * 0.02,
     backgroundColor: '#FFCC33',
   },
-  headerText: {
-    fontSize: width * 0.06,
-    fontWeight: 'bold',
-  },
-  closeButton: {
-    fontSize: width * 0.05,
-    fontWeight: 'bold',
-  },
-  tabsContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    marginVertical: height * 0.02,
-  },
+  headerText: { fontSize: width * 0.06, fontWeight: 'bold' },
+  closeButton: { fontSize: width * 0.05, fontWeight: 'bold' },
+  tabsContainer: { flexDirection: 'row', justifyContent: 'space-around', marginVertical: height * 0.02 },
   tabButton: {
     paddingVertical: height * 0.015,
     paddingHorizontal: width * 0.05,
     borderRadius: width * 0.05,
     backgroundColor: '#FFFFFF',
   },
-  activeTab: {
-    backgroundColor: '#007BFF',
-  },
-  tabText: {
-    color: '#000',
-    fontSize: width * 0.04,
-  },
-  dropdown: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: width * 0.05,
-    paddingVertical: height * 0.015,
-    backgroundColor: '#FFFFFF',
-    marginHorizontal: width * 0.05,
-    borderRadius: width * 0.03,
-    marginBottom: height * 0.015,
-  },
-  dropdownText: {
-    fontSize: width * 0.045,
-    fontWeight: 'bold',
-  },
-  dropdownArrow: {
-    fontSize: width * 0.04,
-  },
-  categoriesContainer: {
-    paddingHorizontal: width * 0.05,
-  },
+  activeTab: { backgroundColor: '#007BFF' },
+  tabText: { color: '#000', fontSize: width * 0.04 },
+  categoriesContainer: { paddingHorizontal: width * 0.05 },
   categoryButton: {
     flex: 1,
     margin: width * 0.02,
@@ -176,31 +142,15 @@ const styles = StyleSheet.create({
     borderRadius: width * 0.03,
     alignItems: 'center',
   },
-  categoryText: {
-    fontSize: width * 0.04,
-  },
-  bottomSection: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginTop: height * 0.03,
+  categoryText: { fontSize: width * 0.04 },
+  loader: { marginTop: height * 0.05 },
+  sectionHeader: {
     paddingHorizontal: width * 0.05,
+    marginVertical: height * 0.02,
   },
-  recommendation: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  recommendationText: {
-    fontSize: width * 0.045,
-    fontWeight: 'bold',
-  },
-  arrowButton: {
-    padding: width * 0.03,
-    backgroundColor: '#FFFFFF',
-    borderRadius: width * 0.1,
-  },
-  arrowText: {
+  sectionHeaderText: {
     fontSize: width * 0.05,
+    fontWeight: 'bold',
   },
 });
 
