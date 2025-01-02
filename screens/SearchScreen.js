@@ -17,34 +17,36 @@ import { useNavigation } from '@react-navigation/native';
 const { width, height } = Dimensions.get('window'); // Get width and height for responsive design
 
 const SearchScreen = () => {
-  const [userInterest, setUserInterest] = useState([]);
+  const [searchQuery, setSearchQuery] = useState('');
   const [filteredProducts, setFilteredProducts] = useState([]);
+  const [categories, setCategories] = useState([]);
   const navigation = useNavigation();
 
   // Sample data
   const searchHistory = ['v neck', 'round neck', 'hoodies', 'half sleeves', 'over size'];
   const recommendations = ['Polo', 'Cropped T-Shirt', 'Black T-Shirt', 'Jeans t-shirt', 'Printed Round Neck'];
   const products = [
-    { id: '1', name: 'Polo T-Shirt', price: 20, category: 'polo', imageUrl: 'https://via.placeholder.com/150' },
-    { id: '2', name: 'Full Sleeve T-Shirt', price: 30, category: 'full sleeve', imageUrl: 'https://via.placeholder.com/150' },
-    { id: '3', name: 'V-Neck T-Shirt', price: 25, category: 'v-neck', imageUrl: 'https://via.placeholder.com/150' },
-    { id: '4', name: 'Oversized T-Shirt', price: 35, category: 'oversized', imageUrl: 'https://via.placeholder.com/150' },
+    { id: '1', name: 'Polo T-Shirt', price: 20, category: 'Polo', imageUrl: 'https://via.placeholder.com/150' },
+    { id: '2', name: 'Full Sleeve T-Shirt', price: 30, category: 'Full Sleeve', imageUrl: 'https://via.placeholder.com/150' },
+    { id: '3', name: 'V-Neck T-Shirt', price: 25, category: 'V-Neck', imageUrl: 'https://via.placeholder.com/150' },
+    { id: '4', name: 'Oversized T-Shirt', price: 35, category: 'Oversized', imageUrl: 'https://via.placeholder.com/150' },
   ];
 
-  // Handle user interest selection
-  const handleInterestSelect = (interest) => {
-    if (!userInterest.includes(interest)) {
-      const updatedInterests = [...userInterest, interest];
-      setUserInterest(updatedInterests);
+  // Handle search input change
+  const handleSearchChange = (text) => {
+    setSearchQuery(text);
 
-      const filtered = products.filter((product) =>
-        updatedInterests.includes(product.category)
-      );
-      setFilteredProducts(filtered);
-    }
+    // Filter products based on the search term
+    const filtered = products.filter((product) =>
+      product.name.toLowerCase().includes(text.toLowerCase()) ||
+      product.category.toLowerCase().includes(text.toLowerCase())
+    );
+    setFilteredProducts(filtered);
+
+    // Dynamically set categories based on search
+    const uniqueCategories = [...new Set(filtered.map((product) => product.category))];
+    setCategories(uniqueCategories);
   };
-
-  const displayedProducts = filteredProducts.length > 0 ? filteredProducts : products;
 
   // Handle back button
   useEffect(() => {
@@ -66,19 +68,40 @@ const SearchScreen = () => {
         <TouchableOpacity onPress={() => navigation.goBack()}>
           <Icon name="arrow-back" size={24} color="black" />
         </TouchableOpacity>
-        <TextInput style={styles.searchInput} placeholder="Search" />
+        <TextInput
+          style={styles.searchInput}
+          placeholder="Search"
+          value={searchQuery}
+          onChangeText={handleSearchChange}
+        />
         <MaterialIcons name="filter-list" size={24} color="black" style={styles.filterIcon} />
+      </View>
+
+      {/* Categories Filter (Dynamic) */}
+      <View style={styles.categoriesContainer}>
+        <Text style={styles.sectionTitle}>Categories</Text>
+        <View style={styles.tagsContainer}>
+          {categories.map((category, index) => (
+            <TouchableOpacity
+              key={index}
+              style={styles.tag}
+              onPress={() => handleSearchChange(category)} // Filter products by category
+            >
+              <Text style={styles.tagText}>{category}</Text>
+            </TouchableOpacity>
+          ))}
+        </View>
       </View>
 
       {/* Search History */}
       <View style={styles.historyContainer}>
-        <Text style={styles.sectionTitle}>Search history</Text>
+        <Text style={styles.sectionTitle}>Search History</Text>
         <View style={styles.tagsContainer}>
           {searchHistory.map((item, index) => (
             <TouchableOpacity
               key={index}
               style={styles.tag}
-              onPress={() => handleInterestSelect(item)}
+              onPress={() => handleSearchChange(item)} // Set search to history item
             >
               <Text style={styles.tagText}>{item}</Text>
             </TouchableOpacity>
@@ -94,7 +117,7 @@ const SearchScreen = () => {
             <TouchableOpacity
               key={index}
               style={styles.tag}
-              onPress={() => handleInterestSelect(item)}
+              onPress={() => handleSearchChange(item)} // Set search to recommendation item
             >
               <Text style={styles.tagText}>{item}</Text>
             </TouchableOpacity>
@@ -106,10 +129,11 @@ const SearchScreen = () => {
       <View style={styles.productList}>
         <Text style={styles.sectionTitle}>Discover</Text>
         <View style={styles.productContainer}>
-          {displayedProducts.map((product) => (
+          {(filteredProducts.length > 0 ? filteredProducts : products).map((product) => (
             <View key={product.id} style={[styles.productCard, { width: width * 0.45 }]}>
               <Image source={{ uri: product.imageUrl }} style={styles.productImage} />
-              {/* Product details */}
+              <Text style={styles.productName}>{product.name}</Text>
+              <Text style={styles.productPrice}>${product.price}</Text>
             </View>
           ))}
         </View>
@@ -141,7 +165,7 @@ const styles = StyleSheet.create({
   filterIcon: {
     marginRight: width * 0.02,
   },
-  historyContainer: {
+  categoriesContainer: {
     marginVertical: height * 0.015,
   },
   sectionTitle: {
@@ -185,6 +209,15 @@ const styles = StyleSheet.create({
     height: height * 0.15,
     resizeMode: 'contain',
     marginBottom: height * 0.01,
+  },
+  productName: {
+    fontSize: width * 0.04,
+    fontWeight: 'bold',
+    marginBottom: height * 0.01,
+  },
+  productPrice: {
+    fontSize: width * 0.035,
+    color: '#888',
   },
 });
 

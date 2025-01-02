@@ -45,7 +45,7 @@ const ProfileScreen = () => {
     }
 
     const fetchUserDetails = async () => {
-      const serverUrl = `http://192.168.111.187/teefinder/getUserDetails.php?username=${userNameParam}`;  // Replace with your server's IP
+      const serverUrl = `http://192.168.34.149/teefinder/getUserDetails.php?username=${userNameParam}`;  // Replace with your server's IP
       try {
         const response = await fetch(serverUrl);
         const result = await response.json();

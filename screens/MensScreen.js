@@ -11,6 +11,7 @@ import {
   KeyboardAvoidingView,
   Platform,
   Keyboard,
+  BackHandler,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/Ionicons';
@@ -26,6 +27,24 @@ const MensScreen = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const navigation = useNavigation();
 
+  // Handle hardware back button
+  useEffect(() => {
+    const backAction = () => {
+      if (navigation.isFocused()) {
+        navigation.goBack(); // Ensure navigation back
+        return true; // Prevent default back behavior
+      }
+      return false; // Allow default behavior if the screen isn't focused
+    };
+
+    const backHandler = BackHandler.addEventListener(
+      'hardwareBackPress',
+      backAction
+    );
+
+    return () => backHandler.remove();
+  }, [navigation]);
+
   // Fetch categories
   useEffect(() => {
     const fetchCategories = async () => {
@@ -37,7 +56,9 @@ const MensScreen = () => {
         if (data.status === 'success') {
           setCategories(data.data);
           setFilteredCategories(data.data);
-        } else console.log('No categories found');
+        } else {
+          console.log('No categories found');
+        }
       } catch (error) {
         console.error('Error fetching categories:', error);
       }
@@ -116,7 +137,7 @@ const MensScreen = () => {
         {item.platforms.map((platform, index) => (
           <TouchableOpacity key={index}>
             <Text style={styles.platformName}>
-              {platform.platformname} - ${platform.platformrate}
+              {platform.platformname} - ₹{platform.platformrate}
             </Text>
           </TouchableOpacity>
         ))}
