@@ -51,24 +51,11 @@ const SettingsScreen = () => {
 
          
 
-          <TouchableOpacity
-            style={styles.menuItem}
-            onPress={() => handleNavigation("RateUs")}
-          >
-            <Text style={styles.menuText}>Rate Us</Text>
-            <Icon name="chevron-forward-outline" size={20} color="#333" />
-          </TouchableOpacity>
+         
         </View>
 
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>About</Text>
-          <TouchableOpacity
-            style={styles.menuItem}
-            onPress={() => handleNavigation("DeveloperInfo")}
-          >
-            <Text style={styles.menuText}>Developer Info</Text>
-            <Icon name="chevron-forward-outline" size={20} color="#333" />
-          </TouchableOpacity>
+          
         </View>
       </ScrollView>
 

@@ -8,14 +8,13 @@ const API_URL = "http://192.168.34.149/teefinder/login.php";
 const LoginScreen = ({ navigation }) => {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
-
     const handleLogin = async () => {
         try {
             if (!username || !password) {
                 Alert.alert("Error", "Please enter both username and password.");
                 return;
             }
-
+    
             const response = await fetch(API_URL, {
                 method: 'POST',
                 headers: {
@@ -26,14 +25,17 @@ const LoginScreen = ({ navigation }) => {
                     password: password.trim(),
                 }),
             });
-
+    
             const data = await response.json();
-
+    
             if (response.ok) {
                 if (data.status === "success") {
                     console.log("Login Successful:", data);
                     Alert.alert("Login Successful", `Welcome, ${data.user.username}!`);
-                    navigation.navigate('HomeScreen', { userId: data.user.id });
+                    
+                    // Pass the username to the HomeScreen
+                    navigation.navigate("HomeScreen", { username: data.user.username, email: data.user.email });
+
                 } else {
                     Alert.alert("Login Failed", data.message || "Invalid credentials.");
                 }
@@ -44,7 +46,8 @@ const LoginScreen = ({ navigation }) => {
             Alert.alert("Error", "Unable to connect to the server. Please check your internet connection.");
         }
     };
-
+    
+    
     return (
         <View style={styles.container}>
             <Text style={styles.title}>Login</Text>

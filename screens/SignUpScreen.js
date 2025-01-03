@@ -20,6 +20,13 @@ const SignUpScreen = () => {
       return;
     }
 
+    // Email format validation
+    const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+    if (!emailRegex.test(email)) {
+      Alert.alert('Error', 'Please enter a valid email address.');
+      return;
+    }
+
     if (password !== reEnterPassword) {
       Alert.alert('Error', 'Passwords do not match.');
       return;
@@ -35,7 +42,7 @@ const SignUpScreen = () => {
         username: username,
         email: email,
         password: password,
-        re_enter_password: reEnterPassword, // Ensure this is sent
+        re_enter_password: reEnterPassword,
       }),
     })
       .then(response => response.json())

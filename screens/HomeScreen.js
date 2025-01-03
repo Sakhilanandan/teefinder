@@ -12,7 +12,7 @@ import {
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/Ionicons';
-
+import { useRoute } from "@react-navigation/native";
 // Screen dimensions
 const { width, height } = Dimensions.get('window');
 
@@ -40,6 +40,11 @@ const products = [
 
 const HomeScreen = () => {
   const navigation = useNavigation();
+  const route = useRoute();
+
+  // Extract username and email from route params with fallbacks
+  const { username = "Guest", email = "Not Available" } = route.params || {};
+
 
   useEffect(() => {
     const backAction = () => {
@@ -146,7 +151,7 @@ const HomeScreen = () => {
         </TouchableOpacity>
         <TouchableOpacity
           style={styles.navItem}
-          onPress={() => navigation.navigate("ProfileScreen",{ userNameParam: 'john_doe' })}
+          onPress={() => navigation.navigate('ProfileScreen', { username })}
         >
           <Icon name="person-outline" size={24} color="#fff" />
           <Text style={styles.navText}>Profile</Text>
@@ -155,7 +160,6 @@ const HomeScreen = () => {
     </View>
   );
 };
-
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#fff' },
   scrollContainer: { paddingBottom: height * 0.1 },

@@ -3,7 +3,6 @@ import {
   View,
   Text,
   StyleSheet,
-  Image,
   TouchableOpacity,
   BackHandler,
   Dimensions,
@@ -16,11 +15,16 @@ const ProfileScreen = () => {
   const navigation = useNavigation();
   const route = useRoute();
 
-  // States to hold user data
-  const [userName, setUserName] = useState("Loading...");
-  const [email, setEmail] = useState("Loading...");
-  const { userNameParam } = route.params || {}; // Extract username passed during navigation
+  // Extract username from navigation params
+  const { username } = route.params || {};
 
+  // State to hold user data
+  const [userData, setUserData] = useState({
+    username: "Loading...",
+    email: "Loading...",
+  });
+
+  // Handle hardware back press
   useEffect(() => {
     const backAction = () => {
       if (navigation.canGoBack()) {
@@ -38,54 +42,51 @@ const ProfileScreen = () => {
     return () => backHandler.remove();
   }, [navigation]);
 
+  // Fetch user data when the screen loads
   useEffect(() => {
-    if (!userNameParam) {
-      console.error("Username is not provided");
-      return;
-    }
-
-    const fetchUserDetails = async () => {
-      const serverUrl = `http://192.168.34.149/teefinder/getUserDetails.php?username=${userNameParam}`;  // Replace with your server's IP
+    const fetchUserData = async () => {
       try {
-        const response = await fetch(serverUrl);
-        const result = await response.json();
-
-        if (result.success) {
-          console(result.data.username)
-          setUserName(result.data.username);
-          setEmail(result.data.email);
+        const response = await fetch(
+          `http://192.168.34.149/teefinder/FetchUser.php?username=${username}`
+        );
+        
+        // Log raw response for debugging
+        const rawText = await response.text();
+        console.log("Raw Response:", rawText);
+        
+        const contentType = response.headers.get("content-type");
+        if (contentType && contentType.includes("application/json")) {
+          const data = JSON.parse(rawText);
+          if (data.success) {
+            setUserData({
+              username: data.data.username,
+              email: data.data.email,
+            });
+          } else {
+            console.error("Failed to fetch user data:", data.message);
+          }
         } else {
-          console.error(result.message);
+          console.error("Non-JSON response:", rawText);
         }
       } catch (error) {
-        console.error("Error fetching user details:", error);
+        console.error("Error fetching user data:", error);
       }
     };
 
-    fetchUserDetails();
-  }, [userNameParam]);
+    fetchUserData();
+  }, [username]);
 
   return (
     <View style={styles.container}>
       <View style={styles.profileContainer}>
-        <TouchableOpacity
-          style={styles.closeButton}
-          onPress={() => navigation.goBack()}
-        >
-          <Text style={styles.closeText}>X</Text>
-        </TouchableOpacity>
-        <Image
-          source={{ uri: "https://via.placeholder.com/100" }}
-          style={styles.profileImage}
-        />
-        <Text style={styles.profileName}>{userName}</Text>
-        <Text style={styles.profileEmail}>{email}</Text>
+        <Text style={styles.profileName}>{userData.username}</Text>
+        <Text style={styles.profileEmail}>{userData.email}</Text>
       </View>
 
       <View style={styles.menu}>
         <TouchableOpacity
           style={styles.menuItem}
-          onPress={() => navigation.navigate("MyProfile", { username: userName })}
+          onPress={() => navigation.navigate("MyProfile", { username: userData.username })}
         >
           <Text style={styles.menuIcon}>👤</Text>
           <Text style={styles.menuText}>My Profile</Text>
@@ -119,64 +120,55 @@ const ProfileScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#FFD700",
-    paddingTop: height * 0.05,
-    paddingHorizontal: width * 0.05,
-  },
-  closeButton: {
-    position: "absolute",
-    top: 10,
-    right: 10,
-  },
-  closeText: {
-    fontSize: 18,
-    fontWeight: "bold",
-    color: "#000",
+    backgroundColor: "#f9f9f9",
+    alignItems: "center",
+    justifyContent: "center",
   },
   profileContainer: {
     alignItems: "center",
-    marginBottom: height * 0.05,
-  },
-  profileImage: {
-    width: width * 0.25,
-    height: width * 0.25,
-    borderRadius: (width * 0.25) / 2,
-    marginBottom: height * 0.02,
+    marginBottom: 30,
   },
   profileName: {
-    fontSize: 18,
+    fontSize: 20,
     fontWeight: "bold",
-    color: "#000",
+    color: "#333",
   },
   profileEmail: {
-    fontSize: 14,
+    fontSize: 16,
     color: "#555",
   },
   menu: {
-    marginVertical: height * 0.02,
+    width: width * 0.9,
+    marginVertical: 20,
   },
   menuItem: {
     flexDirection: "row",
     alignItems: "center",
-    paddingVertical: height * 0.02,
-    borderBottomWidth: 1,
-    borderBottomColor: "#E0E0E0",
+    backgroundColor: "#e6e6e6",
+    padding: 15,
+    borderRadius: 10,
+    marginBottom: 10,
   },
   menuIcon: {
-    fontSize: 18,
+    fontSize: 20,
     marginRight: 15,
   },
   menuText: {
     fontSize: 16,
-    color: "#000",
+    fontWeight: "600",
+    color: "#333",
   },
   logoutButton: {
-    marginTop: height * 0.03,
-    alignSelf: "center",
+    marginTop: 20,
+    backgroundColor: "#d9534f",
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 5,
   },
   logoutText: {
     fontSize: 16,
-    color: "#FF0000",
+    fontWeight: "bold",
+    color: "#fff",
   },
 });
 

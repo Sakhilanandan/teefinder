@@ -6,7 +6,7 @@ const { width, height } = Dimensions.get('window');
 const ChooseScreen = ({ navigation }) => {
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Choose Your Role</Text>
+     
       
       {/* User Login Button */}
       <TouchableOpacity
