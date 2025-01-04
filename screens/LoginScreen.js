@@ -1,5 +1,14 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, Dimensions } from 'react-native';
+import { 
+    View, 
+    Text, 
+    TextInput, 
+    TouchableOpacity, 
+    StyleSheet, 
+    Alert, 
+    Dimensions, 
+    Image 
+} from 'react-native';
 
 const { width, height } = Dimensions.get('window');
 
@@ -8,13 +17,14 @@ const API_URL = "http://192.168.34.149/teefinder/login.php";
 const LoginScreen = ({ navigation }) => {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
+
     const handleLogin = async () => {
         try {
             if (!username || !password) {
                 Alert.alert("Error", "Please enter both username and password.");
                 return;
             }
-    
+
             const response = await fetch(API_URL, {
                 method: 'POST',
                 headers: {
@@ -25,17 +35,16 @@ const LoginScreen = ({ navigation }) => {
                     password: password.trim(),
                 }),
             });
-    
+
             const data = await response.json();
-    
+            console.log('API Response:', data);
+
             if (response.ok) {
                 if (data.status === "success") {
-                    console.log("Login Successful:", data);
-                    Alert.alert("Login Successful", `Welcome, ${data.user.username}!`);
-                    
-                    // Pass the username to the HomeScreen
-                    navigation.navigate("HomeScreen", { username: data.user.username, email: data.user.email });
-
+                    Alert.alert("Login Successful", `Welcome, ${data.username || 'User'}!`);
+                    navigation.navigate(data.role === "admin" ? "AdminHomeScreen" : "HomeScreen", {
+                        username: data.username,
+                    });
                 } else {
                     Alert.alert("Login Failed", data.message || "Invalid credentials.");
                 }
@@ -43,18 +52,21 @@ const LoginScreen = ({ navigation }) => {
                 Alert.alert("Error", "An unexpected error occurred. Please try again.");
             }
         } catch (error) {
+            console.log('Error:', error);
             Alert.alert("Error", "Unable to connect to the server. Please check your internet connection.");
         }
     };
-    
-    
+
     return (
         <View style={styles.container}>
-            <Text style={styles.title}>Login</Text>
+           
+            <Text style={styles.title}>Welcome Back!</Text>
+            <Text style={styles.subtitle}>Log in to your account</Text>
 
             <TextInput
                 style={styles.input}
                 placeholder="Username"
+                placeholderTextColor="#aaa"
                 value={username}
                 onChangeText={setUsername}
             />
@@ -62,6 +74,7 @@ const LoginScreen = ({ navigation }) => {
             <TextInput
                 style={styles.input}
                 placeholder="Password"
+                placeholderTextColor="#aaa"
                 secureTextEntry
                 value={password}
                 onChangeText={setPassword}
@@ -75,7 +88,7 @@ const LoginScreen = ({ navigation }) => {
             </TouchableOpacity>
 
             <TouchableOpacity onPress={() => navigation.navigate('SignUpScreen')}>
-                <Text style={styles.signupText}>New to the App? Sign Up!</Text>
+                <Text style={styles.signupText}>Don't have an account? Sign Up!</Text>
             </TouchableOpacity>
 
             <TouchableOpacity style={styles.guestButton} onPress={() => navigation.navigate('HomeScreen')}>
@@ -88,26 +101,39 @@ const LoginScreen = ({ navigation }) => {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
+        backgroundColor: '#f9f9f9',
         justifyContent: 'center',
         alignItems: 'center',
-        backgroundColor: '#d0d8e7',
         padding: width * 0.05,
     },
+    logo: {
+        width: width * 0.4,
+        height: width * 0.4,
+        marginBottom: height * 0.03,
+        borderRadius: width * 0.2,
+        backgroundColor: '#eee',
+    },
     title: {
-        fontSize: width * 0.08,
+        fontSize: width * 0.07,
         fontWeight: 'bold',
         color: '#0056b3',
-        marginBottom: height * 0.04,
+        marginBottom: height * 0.01,
+    },
+    subtitle: {
+        fontSize: width * 0.045,
+        color: '#666',
+        marginBottom: height * 0.03,
     },
     input: {
         width: width * 0.85,
         height: height * 0.07,
-        backgroundColor: '#d0d8e7',
-        borderRadius: width * 0.03,
+        backgroundColor: '#ffffff',
+        borderRadius: width * 0.02,
         paddingHorizontal: width * 0.04,
         marginBottom: height * 0.015,
         borderWidth: 1,
-        borderColor: '#0056b3',
+        borderColor: '#ddd',
+        fontSize: width * 0.04,
     },
     loginButton: {
         width: width * 0.85,
@@ -115,8 +141,8 @@ const styles = StyleSheet.create({
         backgroundColor: '#0056b3',
         justifyContent: 'center',
         alignItems: 'center',
-        borderRadius: width * 0.03,
-        marginBottom: height * 0.025,
+        borderRadius: width * 0.02,
+        marginBottom: height * 0.02,
     },
     loginButtonText: {
         color: '#fff',
@@ -131,10 +157,10 @@ const styles = StyleSheet.create({
     guestButton: {
         width: width * 0.85,
         height: height * 0.07,
-        backgroundColor: '#0056b3',
+        backgroundColor: '#6c757d',
         justifyContent: 'center',
         alignItems: 'center',
-        borderRadius: width * 0.03,
+        borderRadius: width * 0.02,
         marginTop: height * 0.03,
     },
     guestButtonText: {

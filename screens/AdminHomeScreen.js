@@ -37,7 +37,7 @@ const AdminHomeScreen = () => {
 
         <TouchableOpacity
           style={styles.menuItem}
-          onPress={() => navigation.navigate('AdminLoginScreen')}
+          onPress={() => navigation.navigate('LoginScreen')}
         >
           <Icon name="shirt-outline" size={width * 0.15} color="#0056b3" />
           <Text style={styles.menuText}>logout</Text>

@@ -26,8 +26,8 @@ const WelcomeScreen = ({ navigation }) => {
  // Automatically navigate to LoginScreen after 3 seconds
  useEffect(() => {
   const timer = setTimeout(() => {
-   navigation.navigate('ChooseScreen');
-  }, 3000);
+   navigation.navigate('LoginScreen');
+  }, 1000);
 
   // Cleanup timer if the component unmounts
   return () => clearTimeout(timer);

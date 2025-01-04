@@ -19,7 +19,7 @@ import MyProfileScreen from "./screens/MyProfileScreen";
 import ContactUsScreen from "./screens/ContactUsScreen";
 import FAQScreen from "./screens/FAQScreen";
 import ChooseScreen from "./screens/ChooseScreen";
-import AdminLoginScreen from "./screens/AdminLoginScreen";
+
 import AdminScreen from "./screens/AdminScreen";
 import AdminHomeScreen from "./screens/AdminHomeScreen";
 import AdminCategoriesScreen from "./screens/AdminCategoriesScreen";
@@ -116,11 +116,7 @@ export default function App() {
           component={ChooseScreen}
           options={{ headerShown: false }}
         />
-         <Stack.Screen
-          name="AdminLoginScreen"
-          component={AdminLoginScreen}
-          options={{ headerShown: false }}
-        />
+       
         <Stack.Screen
           name="AdminScreen"
           component={AdminScreen}
