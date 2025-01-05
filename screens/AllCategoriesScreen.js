@@ -20,7 +20,7 @@ const AllCategoriesScreen = () => {
 
   // Fetch categories from the PHP endpoint
   useEffect(() => {
-    fetch('http://192.168.34.149/teefinder/manage_categories.php') // Replace with your PHP endpoint URL
+    fetch('http://192.168.139.163/teefinder/manage_categories.php') // Replace with your PHP endpoint URL
       .then((response) => response.json())
       .then((data) => {
         if (data.status === 'success' && data.data) {

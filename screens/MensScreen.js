@@ -50,7 +50,7 @@ const MensScreen = () => {
     const fetchCategories = async () => {
       try {
         const response = await fetch(
-          'http://192.168.34.149/teefinder/getCategoriesmens.php'
+          'http://192.168.139.163/teefinder/getCategoriesmens.php'
         );
         const data = await response.json();
         if (data.status === 'success') {
@@ -70,7 +70,7 @@ const MensScreen = () => {
   const fetchProducts = async (categoryId) => {
     try {
       const response = await fetch(
-        `http://192.168.34.149/teefinder/getProductsByCategory.php?category_id=${categoryId}`
+        `http://192.168.139.163/teefinder/getProductsByCategory.php?category_id=${categoryId}`
       );
       const data = await response.json();
       if (data.status === 'success') {

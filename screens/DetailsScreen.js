@@ -44,7 +44,7 @@ const DetailsScreen = ({ route }) => {
         console.log('Fetching product details with productId:', productId); // Log productId for debugging
         
         const response = await fetch(
-          `http://192.168.34.149/teefinder/getProductDetails.php?product_id=${productId}`
+          `http://192.168.139.163/teefinder/getProductDetails.php?product_id=${productId}`
         );
         
         // Check if the response is ok (status code 200)
@@ -84,7 +84,7 @@ const DetailsScreen = ({ route }) => {
         return;
       }
 
-      const response = await fetch('http://192.168.34.149/teefinder/updateFavorite.php', {
+      const response = await fetch('http://192.168.139.163/teefinder/updateFavorite.php', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

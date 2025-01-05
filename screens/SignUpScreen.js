@@ -33,7 +33,7 @@ const SignUpScreen = () => {
     }
 
     // Send a POST request to the PHP server for registration
-    fetch('http://192.168.34.149/teefinder/signup.php', {
+    fetch('http://192.168.139.163/teefinder/signup.php', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
