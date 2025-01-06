@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -7,23 +7,63 @@ import {
   TouchableOpacity,
   Dimensions,
   Alert,
+  ActivityIndicator,
 } from "react-native";
 
-// Get screen dimensions
 const { width, height } = Dimensions.get("window");
 
 const MyProfileScreen = ({ route, navigation }) => {
-  // Extract email from route params, with a fallback
-  const { email } = route.params || { email: "example@example.com" };
+  const { username } = route.params || { username: "default_user" };
 
-  // State for profile details
-  const [fullName, setFullName] = useState("John Doe");
-  const [userEmail, setUserEmail] = useState(email);
-  const [password, setPassword] = useState("123");
+  const [fullName, setFullName] = useState("");
+  const [userEmail, setUserEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(true);
 
-  const handleSave = () => {
-    Alert.alert("Profile Updated", "Your changes have been saved!");
-    navigation.goBack();
+  useEffect(() => {
+    const fetchUserData = async () => {
+      try {
+        const response = await fetch(`http://192.168.139.163/teefinder/FetchUser1.php?username=${username}`);
+        const result = await response.json();
+
+        if (result.status === "success") {
+          const { username, email, password } = result.data;
+          setFullName(username);
+          setUserEmail(email);
+          setPassword(password);
+        } else {
+          Alert.alert("Error", result.message || "Unable to fetch data.");
+        }
+      } catch (error) {
+        Alert.alert("Error", "Failed to connect to the server.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchUserData();
+  }, [username]);
+
+  const handleSave = async () => {
+    try {
+      const response = await fetch(`http://192.168.139.163/teefinder/updateUserData.php`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded", // Match server expectations
+        },
+        body: `username=${encodeURIComponent(fullName)}&email=${encodeURIComponent(userEmail)}&password=${encodeURIComponent(password)}`,
+      });
+
+      const result = await response.json();
+      if (result.success) {
+        Alert.alert("Profile Updated", "Your changes have been saved!");
+        navigation.goBack();
+      } else {
+        Alert.alert("Error", result.message || "Failed to update profile.");
+      }
+    } catch (error) {
+      Alert.alert("Error", "Failed to connect to the server.");
+    }
   };
 
   const handleLogout = () => {
@@ -35,21 +75,24 @@ const MyProfileScreen = ({ route, navigation }) => {
     ]);
   };
 
+  if (loading) {
+    return (
+      <View style={styles.loaderContainer}>
+        <ActivityIndicator size="large" color="#0056b3" />
+      </View>
+    );
+  }
+
   return (
     <View style={styles.container}>
-      {/* Profile Section */}
       <View style={styles.profileHeader}>
-        <TouchableOpacity
-          style={styles.closeButton}
-          onPress={() => navigation.goBack()}
-        >
+        <TouchableOpacity style={styles.closeButton} onPress={() => navigation.goBack()}>
           <Text style={styles.closeText}>X</Text>
         </TouchableOpacity>
         <Text style={styles.profileName}>{fullName}</Text>
         <Text style={styles.profileEmail}>{userEmail}</Text>
       </View>
 
-      {/* Editable Fields */}
       <View style={styles.form}>
         <Text style={styles.label}>Full Name</Text>
         <TextInput
@@ -73,12 +116,10 @@ const MyProfileScreen = ({ route, navigation }) => {
           secureTextEntry
         />
 
-        {/* Save Button */}
         <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
           <Text style={styles.saveButtonText}>Save</Text>
         </TouchableOpacity>
 
-        {/* Logout Button */}
         <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
           <Text style={styles.logoutButtonText}>Logout</Text>
         </TouchableOpacity>
@@ -87,13 +128,18 @@ const MyProfileScreen = ({ route, navigation }) => {
   );
 };
 
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#FFD700",
     paddingHorizontal: width * 0.05,
     paddingTop: height * 0.05,
+  },
+  loaderContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#FFD700",
   },
   profileHeader: {
     alignItems: "center",
@@ -108,12 +154,6 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: "bold",
     color: "#000",
-  },
-  profileImage: {
-    width: width * 0.25,
-    height: width * 0.25,
-    borderRadius: (width * 0.25) / 2,
-    marginBottom: 10,
   },
   profileName: {
     fontSize: height * 0.025,
