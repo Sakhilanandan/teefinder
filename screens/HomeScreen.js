@@ -13,6 +13,7 @@ import {
 import { useNavigation } from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { useRoute } from "@react-navigation/native";
+
 // Screen dimensions
 const { width, height } = Dimensions.get('window');
 
@@ -32,12 +33,6 @@ const womensCategories = [
   { id: '5', name: 'halfsleeves', imageUrl: require('../assets/halfsleeve(2).jpeg') },
 ];
 
-const products = [
-  { id: '1', name: 'Polo T-Shirt', price: 20, category: 'polo', imageUrl: require('../assets/polo3.jpg') },
-  { id: '3', name: 'V-Neck T-Shirt', price: 25, category: 'v-neck', imageUrl: require('../assets/vneck.jpeg') },
-  { id: '4', name: 'Oversized T-Shirt', price: 35, category: 'oversized', imageUrl: require('../assets/oversized3.jpg') },
-];
-
 const HomeScreen = () => {
   const navigation = useNavigation();
   const route = useRoute();
@@ -45,8 +40,34 @@ const HomeScreen = () => {
   // Extract username and email from route params with fallbacks
   const { username = "Guest", email = "Not Available" } = route.params || {};
 
+  // State to store products fetched from the API
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
+  // Fetch products from PHP API when the component mounts
   useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        const response = await fetch('http://192.168.139.163/teefinder/home.php'); // Replace with the correct URL for your PHP script
+        const data = await response.json();
+
+        if (data.status === 'success') {
+          setProducts(data.data); // Set the products data from the API response
+        } else {
+          console.log('No products found');
+          setError('No products found');
+        }
+      } catch (error) {
+        console.error('Error fetching products:', error);
+        setError('Error fetching products');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProducts();
+
     const backAction = () => {
       BackHandler.exitApp();
       return true;
@@ -107,30 +128,36 @@ const HomeScreen = () => {
 
         {/* All Products Section */}
         <View style={styles.sectionHeader}>
-          <Text style={styles.sectionTitle}>treand</Text>
+          <Text style={styles.sectionTitle}>Trending</Text>
           <TouchableOpacity>
             <Text style={styles.seeAll}>See All</Text>
           </TouchableOpacity>
         </View>
-        <View>
-          <FlatList
-            data={products}
-            renderItem={({ item }) => (
-              <TouchableOpacity
-                style={styles.productCard}
-                onPress={() => navigation.navigate('DetailsScreen', { productId: item.id })}
-              >
-                <Image source={item.imageUrl} style={styles.productImage} />
-                <Text style={styles.productName}>{item.name}</Text>
-                <Text style={styles.productPrice}>${item.price}</Text>
-              </TouchableOpacity>
-            )}
-            keyExtractor={(item) => item.id}
-            numColumns={2}
-            contentContainerStyle={styles.productList}
-            scrollEnabled={false} // Prevents independent scrolling of FlatList
-          />
-        </View>
+
+        {loading ? (
+          <Text style={styles.loadingText}>Loading products...</Text>
+        ) : error ? (
+          <Text style={styles.errorText}>{error}</Text>
+        ) : (
+          <View>
+            <FlatList
+              data={products}
+              renderItem={({ item }) => (
+                <TouchableOpacity
+                  style={styles.productCard}
+                  onPress={() => navigation.navigate('DetailsScreen', { productId: item.id })}
+                >
+                  <Image source={{ uri: item.image }} style={styles.productImage} />
+                  <Text style={styles.productName}>{item.name}</Text>
+                </TouchableOpacity>
+              )}
+              keyExtractor={(item) => item.id}
+              numColumns={2}
+              contentContainerStyle={styles.productList}
+              scrollEnabled={false} // Prevents independent scrolling of FlatList
+            />
+          </View>
+        )}
       </ScrollView>
 
       {/* Bottom Navigation */}
@@ -160,6 +187,7 @@ const HomeScreen = () => {
     </View>
   );
 };
+
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#fff' },
   scrollContainer: { paddingBottom: height * 0.1 },
@@ -206,18 +234,20 @@ const styles = StyleSheet.create({
   },
   productImage: { width: '100%', height: height * 0.15, borderRadius: width * 0.02 },
   productName: { marginTop: height * 0.01, fontSize: width * 0.04, fontWeight: 'bold', colorr: '#333' },
- productPrice: { marginTop: height * 0.005, fontSize: width * 0.035, color: '#555' },
- bottomNav: {
-  flexDirection: 'row',
-  justifyContent: 'space-around',
-  backgroundColor: '#0056b3',
-  paddingVertical: height * 0.015,
-  position: 'absolute',
-  bottom: 0,
-  width: '100%',
- },
- navItem: { alignItems: 'center' },
- navText: { color: '#fff', fontSize: width * 0.035, marginTop: height * 0.005 },
+  productPrice: { marginTop: height * 0.005, fontSize: width * 0.035, color: '#555' },
+  loadingText: { fontSize: width * 0.04, color: '#333', textAlign: 'center', marginTop: height * 0.02 },
+  errorText: { fontSize: width * 0.04, color: 'red', textAlign: 'center', marginTop: height * 0.02 },
+  bottomNav: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    backgroundColor: '#0056b3',
+    paddingVertical: height * 0.015,
+    position: 'absolute',
+    bottom: 0,
+    width: '100%',
+  },
+  navItem: { alignItems: 'center' },
+  navText: { color: '#fff', fontSize: width * 0.035, marginTop: height * 0.005 },
 });
 
 export default HomeScreen;
