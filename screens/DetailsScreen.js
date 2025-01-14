@@ -42,19 +42,17 @@ const DetailsScreen = ({ route }) => {
     const fetchProductDetails = async () => {
       try {
         console.log('Fetching product details with productId:', productId); // Log productId for debugging
-        
+
         const response = await fetch(
-          `http://192.168.139.163/teefinder/getProductDetails.php?product_id=${productId}`
+          `http://192.168.48.22/teefinder/getProductDetails.php?product_id=${productId}`
         );
-        
-        // Check if the response is ok (status code 200)
+
         if (!response.ok) {
           throw new Error(`HTTP Error! Status: ${response.status}`);
         }
 
         const data = await response.json();
-        
-        // Log the full response data for debugging
+
         console.log('API Response:', data);
 
         if (data.status === 'success') {
@@ -75,35 +73,46 @@ const DetailsScreen = ({ route }) => {
     fetchProductDetails();
   }, [productId]);
 
+  // Debugging AsyncStorage
+  useEffect(() => {
+    const debugUserId = async () => {
+      const userId = await AsyncStorage.getItem('user_id');
+      console.log('Stored user_id:', userId);
+    };
+    debugUserId();
+  }, []);
+
   // Function to toggle favorite status
   const toggleFavorite = async () => {
     try {
-      const userId = await AsyncStorage.getItem('user_id'); // Fetch user_id from storage
+      const userId = await AsyncStorage.getItem('user_id');
+      console.log('Retrieved user_id in toggleFavorite:', userId); // Debugging the user_id
+
       if (!userId) {
         Alert.alert('Error', 'User not logged in.');
         return;
       }
 
-      const response = await fetch('http://192.168.139.163/teefinder/updateFavorite.php', {
+      const response = await fetch('http://192.168.48.22/teefinder/updateFavorite.php', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          user_id: parseInt(userId), // Pass user_id
-          product_id: productId,     // Pass product_id
-          is_favorite: !isFavorite, // Toggle is_favorite
+          user_id: parseInt(userId),
+          product_id: productId,
+          is_favorite: !isFavorite,
         }),
       });
 
       const data = await response.json();
+      console.log('API Response:', data);
+
       if (data.status === 'success') {
-        setIsFavorite(!isFavorite); // Update favorite state
+        setIsFavorite(!isFavorite);
       } else {
         Alert.alert('Error', 'Failed to update favorite status.');
       }
     } catch (error) {
-      console.error(error);
+      console.error('Error in toggleFavorite:', error);
       Alert.alert('Error', 'An error occurred while updating the favorite status.');
     }
   };
@@ -124,9 +133,6 @@ const DetailsScreen = ({ route }) => {
       </View>
     );
   }
-
-  // Check product object structure and log it to understand its format
-  console.log('Product Data:', product);
 
   return (
     <View style={styles.container}>

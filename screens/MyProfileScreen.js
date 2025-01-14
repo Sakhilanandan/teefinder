@@ -23,7 +23,7 @@ const MyProfileScreen = ({ route, navigation }) => {
   useEffect(() => {
     const fetchUserData = async () => {
       try {
-        const response = await fetch(`http://192.168.139.163/teefinder/FetchUser1.php?username=${username}`);
+        const response = await fetch(`http://192.168.48.22/teefinder/FetchUser1.php?username=${username}`);
         const result = await response.json();
 
         if (result.status === "success") {
@@ -46,7 +46,7 @@ const MyProfileScreen = ({ route, navigation }) => {
 
   const handleSave = async () => {
     try {
-      const response = await fetch(`http://192.168.139.163/teefinder/updateUserData.php`, {
+      const response = await fetch(`http://192.168.48.22/teefinder/updateUserData.php`, {
         method: "POST",
         headers: {
           "Content-Type": "application/x-www-form-urlencoded", // Match server expectations

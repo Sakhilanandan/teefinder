@@ -12,11 +12,12 @@ import {
 
 const { width, height } = Dimensions.get('window');
 
-const API_URL = "http://192.168.139.163/teefinder/login.php";
+const API_URL = "http://192.168.48.22/teefinder/login.php";
 
 const LoginScreen = ({ navigation }) => {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
+    const [isPasswordVisible, setPasswordVisible] = useState(false);
 
     const handleLogin = async () => {
         try {
@@ -59,7 +60,6 @@ const LoginScreen = ({ navigation }) => {
 
     return (
         <View style={styles.container}>
-           
             <Text style={styles.title}>Welcome Back!</Text>
             <Text style={styles.subtitle}>Log in to your account</Text>
 
@@ -71,14 +71,24 @@ const LoginScreen = ({ navigation }) => {
                 onChangeText={setUsername}
             />
 
-            <TextInput
-                style={styles.input}
-                placeholder="Password"
-                placeholderTextColor="#aaa"
-                secureTextEntry
-                value={password}
-                onChangeText={setPassword}
-            />
+            <View style={styles.passwordContainer}>
+                <TextInput
+                    style={styles.passwordInput}
+                    placeholder="Password"
+                    placeholderTextColor="#aaa"
+                    secureTextEntry={!isPasswordVisible}
+                    value={password}
+                    onChangeText={setPassword}
+                />
+                <TouchableOpacity 
+                    style={styles.visibilityButton} 
+                    onPress={() => setPasswordVisible(!isPasswordVisible)}
+                >
+                    <Text style={styles.visibilityText}>
+                        {isPasswordVisible ? "Hide" : "Show"}
+                    </Text>
+                </TouchableOpacity>
+            </View>
 
             <TouchableOpacity
                 style={styles.loginButton}
@@ -106,18 +116,11 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         padding: width * 0.05,
     },
-    logo: {
-        width: width * 0.4,
-        height: width * 0.4,
-        marginBottom: height * 0.03,
-        borderRadius: width * 0.2,
-        backgroundColor: '#eee',
-    },
     title: {
         fontSize: width * 0.07,
         fontWeight: 'bold',
         color: '#0056b3',
-        marginBottom: height * 0.01,
+        marginBottom: height * 0.02,
     },
     subtitle: {
         fontSize: width * 0.045,
@@ -133,6 +136,29 @@ const styles = StyleSheet.create({
         marginBottom: height * 0.015,
         borderWidth: 1,
         borderColor: '#ddd',
+        fontSize: width * 0.04,
+    },
+    passwordContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        width: width * 0.85,
+        height: height * 0.07,
+        backgroundColor: '#ffffff',
+        borderRadius: width * 0.02,
+        borderWidth: 1,
+        borderColor: '#ddd',
+        marginBottom: height * 0.015,
+        paddingHorizontal: width * 0.02,
+    },
+    passwordInput: {
+        flex: 1,
+        fontSize: width * 0.04,
+    },
+    visibilityButton: {
+        paddingHorizontal: width * 0.03,
+    },
+    visibilityText: {
+        color: '#0056b3',
         fontSize: width * 0.04,
     },
     loginButton: {
