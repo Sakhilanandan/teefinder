@@ -12,7 +12,7 @@ import {
 
 const { width, height } = Dimensions.get('window');
 
-const API_URL = "http://192.168.48.22/teefinder/login.php";
+const API_URL = "http://192.168.203.70/teefinder/login.php";
 
 const LoginScreen = ({ navigation }) => {
     const [username, setUsername] = useState('');

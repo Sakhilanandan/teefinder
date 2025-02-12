@@ -47,7 +47,7 @@ const ProfileScreen = () => {
     const fetchUserData = async () => {
       try {
         const response = await fetch(
-          `http://192.168.48.22/teefinder/FetchUser.php?username=${username}`
+          `http://192.168.203.70/teefinder/FetchUser.php?username=${username}`
         );
         
         // Log raw response for debugging
