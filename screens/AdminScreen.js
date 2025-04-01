@@ -27,7 +27,7 @@ const AdminScreen = () => {
   const [platforms, setPlatforms] = useState([{ platformName: '', platformRate: '', link: '' }]);
 
   useEffect(() => {
-    fetch('http://192.168.203.70/teefinder/manage_categories.php')
+    fetch('http://14.139.187.229:8081/teefinder/manage_categories.php')
       .then((response) => response.json())
       .then((result) => {
         if (result.status === 'success') {
@@ -107,7 +107,7 @@ const AdminScreen = () => {
     });
 
     try {
-      const response = await fetch('http://192.168.203.70/teefinder/add_product.php', {
+      const response = await fetch('http://14.139.187.229:8081/teefinder/add_product.php', {
         method: 'POST',
         body: formData,
       });

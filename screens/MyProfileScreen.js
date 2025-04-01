@@ -23,7 +23,7 @@ const MyProfileScreen = ({ route, navigation }) => {
   useEffect(() => {
     const fetchUserData = async () => {
       try {
-        const response = await fetch(`http://192.168.203.70/teefinder/FetchUser1.php?username=${username}`);
+        const response = await fetch(`http://14.139.187.229:8081/teefinder/FetchUser1.php?username=${username}`);
         const result = await response.json();
 
         if (result.status === "success") {
@@ -46,10 +46,10 @@ const MyProfileScreen = ({ route, navigation }) => {
 
   const handleSave = async () => {
     try {
-      const response = await fetch(`http://192.168.203.70/teefinder/updateUserData.php`, {
+      const response = await fetch(`http://14.139.187.229:8081/teefinder/updateUserData.php`, {
         method: "POST",
         headers: {
-          "Content-Type": "application/x-www-form-urlencoded", // Match server expectations
+          "Content-Type": "application/x-www-form-urlencoded",
         },
         body: `username=${encodeURIComponent(fullName)}&email=${encodeURIComponent(userEmail)}&password=${encodeURIComponent(password)}`,
       });
@@ -73,6 +73,39 @@ const MyProfileScreen = ({ route, navigation }) => {
         onPress: () => navigation.replace("LoginScreen"),
       },
     ]);
+  };
+
+  // 🛑 Delete Account Function
+  const deleteUser = async () => {
+    Alert.alert(
+      "Delete Account",
+      "Are you sure you want to delete your account? This action cannot be undone.",
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Delete",
+          onPress: async () => {
+            try {
+              const response = await fetch(`http://14.139.187.229:8081/teefinder/deleteUser.php`, {
+                method: "POST",
+                headers: { "Content-Type": "application/x-www-form-urlencoded" },
+                body: `username=${encodeURIComponent(username)}`,
+              });
+
+              const result = await response.json();
+              if (result.success) {
+                Alert.alert("Account Deleted", "Your account has been deleted.");
+                navigation.replace("LoginScreen");
+              } else {
+                Alert.alert("Error", result.message || "Failed to delete account.");
+              }
+            } catch (error) {
+              Alert.alert("Error", "Failed to connect to the server.");
+            }
+          },
+        },
+      ]
+    );
   };
 
   if (loading) {
@@ -122,6 +155,11 @@ const MyProfileScreen = ({ route, navigation }) => {
 
         <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
           <Text style={styles.logoutButtonText}>Logout</Text>
+        </TouchableOpacity>
+
+        {/* 🛑 Delete Account Button */}
+        <TouchableOpacity style={styles.deleteButton} onPress={deleteUser}>
+          <Text style={styles.deleteButtonText}>Delete Account</Text>
         </TouchableOpacity>
       </View>
     </View>
@@ -197,8 +235,20 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     padding: height * 0.02,
     alignItems: "center",
+    marginBottom: height * 0.015,
   },
   logoutButtonText: {
+    color: "#FFF",
+    fontSize: height * 0.02,
+    fontWeight: "bold",
+  },
+  deleteButton: {
+    backgroundColor: "#FF0000",
+    borderRadius: 10,
+    padding: height * 0.02,
+    alignItems: "center",
+  },
+  deleteButtonText: {
     color: "#FFF",
     fontSize: height * 0.02,
     fontWeight: "bold",

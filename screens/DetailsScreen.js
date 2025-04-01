@@ -44,7 +44,7 @@ const DetailsScreen = ({ route }) => {
         console.log('Fetching product details with productId:', productId); // Log productId for debugging
 
         const response = await fetch(
-          `http://192.168.203.70/teefinder/getProductDetails.php?product_id=${productId}`
+          `http://14.139.187.229:8081/teefinder/getProductDetails.php?product_id=${productId}`
         );
 
         if (!response.ok) {
@@ -93,7 +93,7 @@ const DetailsScreen = ({ route }) => {
         return;
       }
 
-      const response = await fetch('http://192.168.203.70/teefinder/updateFavorite.php', {
+      const response = await fetch('http://14.139.187.229:8081/teefinder/updateFavorite.php', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

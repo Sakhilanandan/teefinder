@@ -4,6 +4,7 @@ import {
   Text,
   StyleSheet,
   TouchableOpacity,
+  Alert,
   BackHandler,
   Dimensions,
 } from "react-native";
@@ -15,16 +16,13 @@ const ProfileScreen = () => {
   const navigation = useNavigation();
   const route = useRoute();
 
-  // Extract username from navigation params
   const { username } = route.params || {};
 
-  // State to hold user data
   const [userData, setUserData] = useState({
     username: "Loading...",
     email: "Loading...",
   });
 
-  // Handle hardware back press
   useEffect(() => {
     const backAction = () => {
       if (navigation.canGoBack()) {
@@ -42,39 +40,96 @@ const ProfileScreen = () => {
     return () => backHandler.remove();
   }, [navigation]);
 
-  // Fetch user data when the screen loads
   useEffect(() => {
     const fetchUserData = async () => {
+      if (username === "guest") {
+        setUserData({ username: "Guest", email: "guest" });
+        return;
+      }
+
       try {
         const response = await fetch(
-          `http://192.168.203.70/teefinder/FetchUser.php?username=${username}`
+          `http://14.139.187.229:8081/teefinder/FetchUser.php?username=${username}`
         );
-        
-        // Log raw response for debugging
+
         const rawText = await response.text();
         console.log("Raw Response:", rawText);
-        
+
         const contentType = response.headers.get("content-type");
+
         if (contentType && contentType.includes("application/json")) {
           const data = JSON.parse(rawText);
+
           if (data.success) {
             setUserData({
               username: data.data.username,
               email: data.data.email,
             });
           } else {
-            console.error("Failed to fetch user data:", data.message);
+            // Show "User not found" for invalid usernames
+            setUserData({
+              username: "User not found",
+              email: "N/A",
+            });
           }
         } else {
           console.error("Non-JSON response:", rawText);
+          setUserData({
+            username: "Error",
+            email: "N/A",
+          });
         }
       } catch (error) {
         console.error("Error fetching user data:", error);
+        setUserData({
+          username: "Error",
+          email: "N/A",
+        });
       }
     };
 
     fetchUserData();
   }, [username]);
+
+  const deleteAccount = () => {
+    if (username === "guest") {
+      Alert.alert("Guest User", "Guest accounts cannot be deleted.");
+      return;
+    }
+
+    Alert.alert(
+      "Delete Account",
+      "Are you sure you want to delete your account? This action cannot be undone.",
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Delete",
+          onPress: async () => {
+            try {
+              const response = await fetch(
+                `http://14.139.187.229:8081/teefinder/deleteUser.php`,
+                {
+                  method: "POST",
+                  headers: { "Content-Type": "application/x-www-form-urlencoded" },
+                  body: `username=${encodeURIComponent(username)}`,
+                }
+              );
+
+              const result = await response.json();
+              if (result.success) {
+                Alert.alert("Account Deleted", "Your account has been deleted.");
+                navigation.replace("LoginScreen");
+              } else {
+                Alert.alert("Error", result.message || "Failed to delete account.");
+              }
+            } catch (error) {
+              Alert.alert("Error", "Failed to connect to the server.");
+            }
+          },
+        },
+      ]
+    );
+  };
 
   return (
     <View style={styles.container}>
@@ -91,6 +146,7 @@ const ProfileScreen = () => {
           <Text style={styles.menuIcon}>👤</Text>
           <Text style={styles.menuText}>My Profile</Text>
         </TouchableOpacity>
+
         <TouchableOpacity
           style={styles.menuItem}
           onPress={() => navigation.navigate("ContactUs")}
@@ -98,6 +154,7 @@ const ProfileScreen = () => {
           <Text style={styles.menuIcon}>📞</Text>
           <Text style={styles.menuText}>Contact Us</Text>
         </TouchableOpacity>
+
         <TouchableOpacity
           style={styles.menuItem}
           onPress={() => navigation.navigate("FAQScreen")}
@@ -112,6 +169,13 @@ const ProfileScreen = () => {
         onPress={() => navigation.navigate("LoginScreen")}
       >
         <Text style={styles.logoutText}>Log Out</Text>
+      </TouchableOpacity>
+
+      <TouchableOpacity
+        style={styles.deleteButton}
+        onPress={deleteAccount}
+      >
+        <Text style={styles.deleteText}>Delete Account</Text>
       </TouchableOpacity>
     </View>
   );
@@ -166,6 +230,18 @@ const styles = StyleSheet.create({
     borderRadius: 5,
   },
   logoutText: {
+    fontSize: 16,
+    fontWeight: "bold",
+    color: "#fff",
+  },
+  deleteButton: {
+    marginTop: 10,
+    backgroundColor: "#ff0000",
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 5,
+  },
+  deleteText: {
     fontSize: 16,
     fontWeight: "bold",
     color: "#fff",

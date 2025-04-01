@@ -49,7 +49,7 @@ const HomeScreen = () => {
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const response = await fetch('http://192.168.203.70/teefinder/home.php'); // Replace with the correct URL for your PHP script
+        const response = await fetch('http://14.139.187.229:8081/teefinder/home.php'); // Replace with the correct URL for your PHP script
         const data = await response.json();
 
         if (data.status === 'success') {
