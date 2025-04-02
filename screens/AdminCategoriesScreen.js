@@ -12,9 +12,10 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { launchImageLibrary } from 'react-native-image-picker';
+import API_BASE_URL from './config';
 
 const { width, height } = Dimensions.get('window');
-const API_URL = "http://14.139.187.229:8081/teefinder/categories.php"; // Replace with your PHP server URL
+const API_URL = `${API_BASE_URL}/categories.php`; // Replace with your PHP server URL
 
 const AdminCategoriesScreen = () => {
   const [categories, setCategories] = useState([]); // For mens and womens categories

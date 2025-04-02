@@ -10,6 +10,9 @@ import {
   ActivityIndicator,
 } from "react-native";
 
+// Import API base URL from config.js
+import API_BASE_URL from './config';
+
 const { width, height } = Dimensions.get("window");
 
 const MyProfileScreen = ({ route, navigation }) => {
@@ -23,7 +26,7 @@ const MyProfileScreen = ({ route, navigation }) => {
   useEffect(() => {
     const fetchUserData = async () => {
       try {
-        const response = await fetch(`http://14.139.187.229:8081/teefinder/FetchUser1.php?username=${username}`);
+        const response = await fetch(`${API_BASE_URL}/FetchUser1.php?username=${username}`);
         const result = await response.json();
 
         if (result.status === "success") {
@@ -46,7 +49,7 @@ const MyProfileScreen = ({ route, navigation }) => {
 
   const handleSave = async () => {
     try {
-      const response = await fetch(`http://14.139.187.229:8081/teefinder/updateUserData.php`, {
+      const response = await fetch(`${API_BASE_URL}/updateUserData.php`, {
         method: "POST",
         headers: {
           "Content-Type": "application/x-www-form-urlencoded",
@@ -75,7 +78,6 @@ const MyProfileScreen = ({ route, navigation }) => {
     ]);
   };
 
-  // 🛑 Delete Account Function
   const deleteUser = async () => {
     Alert.alert(
       "Delete Account",
@@ -86,7 +88,7 @@ const MyProfileScreen = ({ route, navigation }) => {
           text: "Delete",
           onPress: async () => {
             try {
-              const response = await fetch(`http://14.139.187.229:8081/teefinder/deleteUser.php`, {
+              const response = await fetch(`${API_BASE_URL}/deleteUser.php`, {
                 method: "POST",
                 headers: { "Content-Type": "application/x-www-form-urlencoded" },
                 body: `username=${encodeURIComponent(username)}`,

@@ -15,6 +15,7 @@ import {
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/Ionicons';
+import API_BASE_URL from '\./config';
 
 const { height } = Dimensions.get('window');
 
@@ -50,7 +51,7 @@ const WoensScreen = () => {
     const fetchCategories = async () => {
       try {
         const response = await fetch(
-          'http://14.139.187.229:8081/teefinder/getCategorieswomens.php'
+          `${API_BASE_URL}/getCategorieswomens.php`
         );
         const data = await response.json();
         if (data.status === 'success') {

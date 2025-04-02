@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, Alert, StyleSheet, ScrollView, Dimensions } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
+import API_BASE_URL from './config'; // Import the config file
 
 const { width, height } = Dimensions.get('window');
 
@@ -33,7 +34,7 @@ const SignUpScreen = () => {
     }
 
     // Send a POST request to the PHP server for registration
-    fetch('http://14.139.187.229:8081/teefinder/signup.php', {
+    fetch(`${API_BASE_URL}/signup.php`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

@@ -9,10 +9,12 @@ import {
     Dimensions, 
     Image 
 } from 'react-native';
+import API_BASE_URL from './config'; // Import the API URL
 
 const { width, height } = Dimensions.get('window');
 
-const API_URL = "http://14.139.187.229:8081/teefinder/login.php";
+const API_URL = `${API_BASE_URL}/login.php`;
+  // Use the API URL from config.js
 
 const LoginScreen = ({ navigation }) => {
     const [username, setUsername] = useState('');
@@ -25,7 +27,17 @@ const LoginScreen = ({ navigation }) => {
                 Alert.alert("Error", "Please enter both username and password.");
                 return;
             }
-
+    
+            // Log the request payload for debugging
+            console.log('Request Payload:', {
+                username: username.trim(),
+                password: password.trim(),
+            });
+    
+            // Log the constructed API URL for debugging
+            console.log('API URL:', API_URL);
+    
+            // Send the login request
             const response = await fetch(API_URL, {
                 method: 'POST',
                 headers: {
@@ -36,11 +48,14 @@ const LoginScreen = ({ navigation }) => {
                     password: password.trim(),
                 }),
             });
-
-            const data = await response.json();
-            console.log('API Response:', data);
-
+    
+            // Check for response status
             if (response.ok) {
+                const data = await response.json();
+    
+                // Log the API response for debugging
+                console.log('API Response:', data);
+    
                 if (data.status === "success") {
                     Alert.alert("Login Successful", `Welcome, ${data.username || 'User'}!`);
                     navigation.navigate(data.role === "admin" ? "AdminHomeScreen" : "HomeScreen", {
@@ -57,6 +72,8 @@ const LoginScreen = ({ navigation }) => {
             Alert.alert("Error", "Unable to connect to the server. Please check your internet connection.");
         }
     };
+    
+
 
     return (
         <View style={styles.container}>
@@ -153,7 +170,9 @@ const styles = StyleSheet.create({
     passwordInput: {
         flex: 1,
         fontSize: width * 0.04,
+        color: 'black', // Set the text color to black
     },
+    
     visibilityButton: {
         paddingHorizontal: width * 0.03,
     },

@@ -10,6 +10,9 @@ import {
 } from "react-native";
 import { useNavigation, useRoute } from "@react-navigation/native";
 
+// Import the API base URL from the config file
+import API_BASE_URL from './config';
+
 const { width, height } = Dimensions.get("window");
 
 const ProfileScreen = () => {
@@ -49,7 +52,7 @@ const ProfileScreen = () => {
 
       try {
         const response = await fetch(
-          `http://14.139.187.229:8081/teefinder/FetchUser.php?username=${username}`
+          `${API_BASE_URL}/FetchUser.php?username=${username}`
         );
 
         const rawText = await response.text();
@@ -107,7 +110,7 @@ const ProfileScreen = () => {
           onPress: async () => {
             try {
               const response = await fetch(
-                `http://14.139.187.229:8081/teefinder/deleteUser.php`,
+                `${API_BASE_URL}/deleteUser.php`,
                 {
                   method: "POST",
                   headers: { "Content-Type": "application/x-www-form-urlencoded" },

@@ -9,6 +9,7 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
+import API_BASE_URL from './config'; // Import the API base URL
 
 const { width, height } = Dimensions.get('window');
 
@@ -18,9 +19,9 @@ const AllCategoriesScreen = () => {
   const [categories, setCategories] = useState({ mens: [], womens: [] });
   const [loading, setLoading] = useState(true);
 
-  // Fetch categories from the PHP endpoint
+  // Fetch categories from the PHP endpoint using the API_BASE_URL
   useEffect(() => {
-    fetch('http://14.139.187.229:8081/teefinder/manage_categories.php') // Replace with your PHP endpoint URL
+    fetch(`${API_BASE_URL}/manage_categories.php`) // Use API_BASE_URL
       .then((response) => response.json())
       .then((data) => {
         if (data.status === 'success' && data.data) {
@@ -48,7 +49,7 @@ const AllCategoriesScreen = () => {
       navigation.navigate('MensScreen', { categoryName });  // Navigate to MensScreen
     } else if (selectedTab === 'womens') {
       navigation.navigate('WomensScreen', { categoryName });  // Navigate to WomensScreen
-    } 
+    }
   };
 
   const renderCategory = ({ item }) => (

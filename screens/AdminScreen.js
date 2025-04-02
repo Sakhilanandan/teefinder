@@ -14,6 +14,7 @@ import {
   Platform,
 } from 'react-native';
 import { launchImageLibrary } from 'react-native-image-picker';
+import API_BASE_URL from './config'; // Import the API base URL from config
 
 const { width } = Dimensions.get('window');
 
@@ -27,7 +28,8 @@ const AdminScreen = () => {
   const [platforms, setPlatforms] = useState([{ platformName: '', platformRate: '', link: '' }]);
 
   useEffect(() => {
-    fetch('http://14.139.187.229:8081/teefinder/manage_categories.php')
+    // Fetch categories using the API base URL from config.js
+    fetch(`${API_BASE_URL}/manage_categories.php`)
       .then((response) => response.json())
       .then((result) => {
         if (result.status === 'success') {
@@ -107,7 +109,7 @@ const AdminScreen = () => {
     });
 
     try {
-      const response = await fetch('http://14.139.187.229:8081/teefinder/add_product.php', {
+      const response = await fetch(`${API_BASE_URL}/add_product.php`, {
         method: 'POST',
         body: formData,
       });

@@ -13,6 +13,7 @@ import {
 import { useNavigation } from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { useRoute } from "@react-navigation/native";
+import API_BASE_URL from './config';
 
 // Screen dimensions
 const { width, height } = Dimensions.get('window');
@@ -49,7 +50,7 @@ const HomeScreen = () => {
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const response = await fetch('http://14.139.187.229:8081/teefinder/home.php'); // Replace with the correct URL for your PHP script
+        const response = await fetch(`${API_BASE_URL}/home.php`); // Replace with the correct URL for your PHP script
         const data = await response.json();
 
         if (data.status === 'success') {

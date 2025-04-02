@@ -23,6 +23,8 @@ import AdminHomeScreen from "./screens/AdminHomeScreen";
 import AdminCategoriesScreen from "./screens/AdminCategoriesScreen";
 import AboutUsScreen from "./screens/AboutUsScreen";
 import TermsConditionsScreen from "./screens/TermsConditionsScreen";
+import Favorites from './screens/Favorites';
+
 const Stack = createStackNavigator();
 
 export default function App() {
@@ -37,6 +39,11 @@ export default function App() {
     <Stack.Screen
      name="HomeScreen"
      component={HomeScreen}
+     options={{ headerShown: false }}
+    />
+    <Stack.Screen
+     name="Favorites"
+     component={Favorites}
      options={{ headerShown: false }}
     />
     <Stack.Screen
